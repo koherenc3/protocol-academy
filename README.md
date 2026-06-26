@@ -1,5 +1,7 @@
 # IAM Protocol Academy
 
+[![Docs: Wiki](https://img.shields.io/badge/docs-wiki-2563eb)](https://github.com/koherenc3/protocol-academy/wiki) [![Live demo](https://img.shields.io/badge/demo-live-22c55e)](https://protocol-academy-iota.vercel.app)
+
 Interactive, educational walkthroughs of IAM and security protocols. Step through
 real flows (OAuth 2.0, OpenID Connect, …), inspect the inputs and outputs at each
 step, and decode the tokens and payloads exchanged — all in a static site you can
@@ -10,6 +12,23 @@ host anywhere.
 Protocol specs are dense and diagrams are static. This app makes each flow
 **clickable**: select any message to see who sends it, what it carries, and why
 each field matters — including a live JWT decoder for ID tokens.
+
+> **This repository doubles as a proof of concept for agentic delivery:** a coding
+> agent turns a plain-language GitHub issue into reviewed, production-deployed work,
+> with a human approving the result rather than authoring it. The app is the
+> payload; the pipeline is the point — see
+> [The Agentic Pipeline](https://github.com/koherenc3/protocol-academy/wiki/The-Agentic-Pipeline).
+
+## Documentation
+
+Full architecture, backend, and design docs live in the **[project wiki](https://github.com/koherenc3/protocol-academy/wiki)**
+(mirrored in [`docs/`](docs/README.md)):
+
+- [Architecture Overview](docs/Architecture-Overview.md) — the four layers
+- [The Agentic Pipeline](docs/The-Agentic-Pipeline.md) — issue → author agent → gates → reviewer agent → production
+- [The Content Engine](docs/The-Content-Engine.md) — the Zod contract, auto-discovery codegen, flow engine
+- [Design Decisions & Lessons](docs/Design-Decisions-and-Lessons.md) — rationale + the real production bugs
+- [Operations & Extending](docs/Operations-and-Extending.md) — runbook
 
 ## Architecture
 
