@@ -1,7 +1,8 @@
 import type { Payload } from "@/lib/types";
 import { JwtViewer } from "./JwtViewer";
 import { HttpViewer } from "./HttpViewer";
-import { RawViewer, XmlViewer } from "./RawViewer";
+import { RawViewer } from "./RawViewer";
+import { XmlViewer } from "./XmlViewer";
 
 /**
  * Switches on the payload's `kind` to render the right viewer. This is the one

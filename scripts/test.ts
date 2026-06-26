@@ -6,6 +6,7 @@
  */
 import assert from "node:assert/strict";
 import { decodeJwt, describeClaim } from "../lib/jwt";
+import { formatXml } from "../lib/xml";
 
 let passed = 0;
 function test(name: string, fn: () => void) {
@@ -44,6 +45,30 @@ console.log("describeClaim:");
 test("renders time claims as ISO strings", () => {
   assert.equal(describeClaim("exp", 1735693200), "2025-01-01T01:00:00.000Z");
   assert.equal(describeClaim("name", "Jane"), null);
+});
+
+console.log("formatXml:");
+
+test("indents by nesting depth and classifies tokens", () => {
+  const lines = formatXml('<a><b x="1">hi</b></a>');
+  assert.equal(lines.length, 5);
+  assert.deepEqual(
+    lines.map((l) => [l.depth, l.kind]),
+    [
+      [0, "open"],
+      [1, "open"],
+      [2, "text"],
+      [1, "close"],
+      [0, "close"],
+    ],
+  );
+  assert.equal(lines[2].raw, "hi");
+});
+
+test("handles self-closing tags and declarations", () => {
+  const lines = formatXml('<?xml version="1.0"?><root><img/></root>');
+  assert.equal(lines[0].kind, "decl");
+  assert.equal(lines.find((l) => l.raw.includes("img"))?.kind, "self");
 });
 
 console.log(`\n✓ ${passed} test(s) passed.`);

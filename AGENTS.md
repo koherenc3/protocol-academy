@@ -76,7 +76,7 @@ one feature that is opt-in (see `topology` above).
 |---------|-------|---------|
 | `http`  | `{ method, url, query?, headers?, body?, annotations? }` | Requests & redirects. `method` ∈ GET/POST/PUT/DELETE/PATCH/302/303 |
 | `jwt`   | `{ token, annotations? }` — `token` is real `header.payload.signature` base64url | ID tokens, signed assertions |
-| `xml`   | `{ xml, annotations? }` | SAML assertions, WS-* (viewer is currently a basic stub) |
+| `xml`   | `{ xml, annotations? }` | SAML assertions/metadata, WS-* (viewer pretty-prints + syntax-highlights; pass the decoded XML, not base64) |
 | `raw`   | `{ content, label?, language?, annotations? }` | JSON responses, opaque blobs, anything else |
 
 `annotations: { target, note }[]` render as callouts beneath the payload — use them
