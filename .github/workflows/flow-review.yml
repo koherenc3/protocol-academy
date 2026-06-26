@@ -44,6 +44,10 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Author flows are opened by the Claude GitHub App (a bot). Without
+          # this, the reviewer refuses to run on exactly the PRs we care about
+          # ("Workflow initiated by non-human actor"). Allowlist just that bot.
+          allowed_bots: "claude,claude[bot]"
           claude_args: >
             --allowedTools Read,Glob,Grep,WebFetch,Write
             --max-turns 35
