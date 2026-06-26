@@ -15,3 +15,6 @@ next-env.d.ts
 # Accuracy-review artifacts (CI only)
 /flow-review.json
 /flow-review.md
+
+# Generated wiki content (built from docs/ by scripts/build-wiki.mjs)
+/wiki-build

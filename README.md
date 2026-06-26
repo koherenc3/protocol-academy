@@ -21,8 +21,10 @@ each field matters — including a live JWT decoder for ID tokens.
 
 ## Documentation
 
-Full architecture, backend, and design docs live in the **[project wiki](https://github.com/koherenc3/protocol-academy/wiki)**
-(mirrored in [`docs/`](docs/README.md)):
+Architecture, backend, and design docs live in [`docs/`](docs/README.md) — the
+single source of truth — and are auto-published to the **[project wiki](https://github.com/koherenc3/protocol-academy/wiki)**
+on every change (`scripts/build-wiki.mjs` + `.github/workflows/publish-wiki.yml`).
+**Edit `docs/`, not the wiki** (wiki edits are overwritten on the next sync).
 
 - [Architecture Overview](docs/Architecture-Overview.md) — the four layers
 - [The Agentic Pipeline](docs/The-Agentic-Pipeline.md) — issue → author agent → gates → reviewer agent → production

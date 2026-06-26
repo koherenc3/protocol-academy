@@ -1,0 +1,45 @@
+name: Publish Wiki
+
+# Keeps the GitHub wiki in sync with docs/ (the single source of truth).
+# docs/ changes go through PRs + CI; on merge to main this regenerates the wiki
+# pages and pushes them. Edit docs/, never the wiki directly — wiki edits are
+# overwritten on the next sync.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "scripts/build-wiki.mjs"
+      - ".github/workflows/publish-wiki.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build wiki content from docs/
+        run: node scripts/build-wiki.mjs
+
+      - name: Push to wiki
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.wiki.git" wiki-repo
+          rm -f wiki-repo/*.md
+          cp wiki-build/*.md wiki-repo/
+          cd wiki-repo
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Wiki already in sync — nothing to push."
+          else
+            git commit -m "Sync wiki from docs/ (${GITHUB_SHA})"
+            git push
+            echo "Wiki updated."
+          fi
