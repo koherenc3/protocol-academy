@@ -1,0 +1,41 @@
+## What problem does this solve?
+
+Passwords are a shared secret: the user knows it and the server stores a copy (hopefully hashed). That shared secret can be phished, reused across sites, leaked in a database breach, or replayed. WebAuthn (the W3C Web Authentication API, the browser half of FIDO2) replaces it with **public-key cryptography bound to one website**.
+
+An **authenticator** — Touch ID, Windows Hello, or a roaming security key — generates a key pair during a one-time **registration ceremony** and keeps the private key. The site (the **Relying Party**) stores only the **public** key. To log in, the authenticator signs a fresh server challenge with the private key in an **authentication ceremony**. The result is a *passkey*: there is no shared secret on the server to steal, and because the credential is scoped to the site's identity and the browser checks the real origin, a look-alike phishing page simply cannot use it.
+
+Use the **Authentication ceremony** toggle to switch between the two ceremonies:
+
+- **OFF — Registration (attestation):** create and store a new credential.
+- **ON — Authentication (assertion):** prove possession of an existing one.
+
+## Walking the flow
+
+Both ceremonies share the same four actors and the same shape: the RP issues a challenge, the browser builds **clientDataJSON**, the authenticator does the cryptography after a user gesture, and the RP verifies.
+
+**Registration (toggle OFF).** At **PublicKeyCredentialCreationOptions** the RP hands the browser the `rp`, `user`, acceptable algorithms (`pubKeyCredParams` as COSE ids — `-7` is ES256), and a random `challenge`. **navigator.credentials.create()** has the browser assemble `clientDataJSON` (`type: "webauthn.create"`, the challenge, and the **origin** it fills in itself) and call the authenticator; the user touches the sensor. At **New credential (attestationObject)** the authenticator returns a `credentialId`, the CBOR **attestationObject** (containing `authenticatorData` + `attStmt`) and the `clientDataJSON`. The browser **POSTs the attestation** and the RP **verifies & stores** the public key, id and initial `signCount`.
+
+**Authentication (toggle ON).** At **PublicKeyCredentialRequestOptions** the RP returns a new `challenge`, the `rpId`, and `allowCredentials`. **navigator.credentials.get()** builds a `clientDataJSON` with `type: "webauthn.get"` and triggers the gesture. The **Assertion** carries `authenticatorData` (note the **incremented `signCount`**), the `clientDataJSON`, the `signature`, and the `userHandle`. The browser **POSTs the assertion**; the RP **verifies the signature and counter** and establishes a session.
+
+Three fields do the heavy lifting in both ceremonies — they're annotated on the payloads:
+
+- the random **challenge** gives **anti-replay**;
+- the **origin** (in clientDataJSON) and the **RP ID hash** (in authenticatorData) bind the credential to one site, which is what makes passkeys **phishing-resistant**;
+- the monotonic **signature counter** enables **clone detection**.
+
+## Security notes
+
+- **Verify the challenge.** The RP must compare the challenge inside `clientDataJSON` against the exact value it issued, and only accept challenges it generated. This is what stops a captured ceremony being replayed.
+- **Verify the origin and RP ID, both sides.** Check `clientData.origin` equals the expected origin, and that `authenticatorData.rpIdHash === SHA-256(rpId)`. These two checks are the phishing resistance: a credential created for `example.com` cannot be exercised from `examp1e.com`. Never relax the origin check to a substring/`endsWith` match.
+- **Check the `type`.** `"webauthn.create"` for registration, `"webauthn.get"` for authentication — this prevents cross-ceremony replay.
+- **Honor the flags.** Require **UP** (user present); require **UV** (user verified) whenever you asked for `userVerification: "required"`.
+- **Enforce the signature counter.** When the authenticator uses a counter, each assertion's `signCount` must be **greater than** the stored value; persist the new value. A counter that fails to advance is a signal of a cloned authenticator. (Some authenticators always report `0`; treat that as "no counter," not as failure.)
+- **Store only the public key.** A breach of the credential table reveals nothing usable — there is no secret to verify against. Contrast with passwords, where even hashes are attackable offline.
+- **Attestation is usually optional.** Consumer passkey flows commonly request `attestation: "none"`; only verify `attStmt` (and authenticator AAGUIDs) when you have an enterprise policy reason to care about authenticator provenance.
+
+## Further reading
+
+- [W3C Web Authentication (WebAuthn) Level 2](https://www.w3.org/TR/webauthn-2/)
+- [§7.1 — Registering a new credential](https://www.w3.org/TR/webauthn-2/#sctn-registering-a-new-credential)
+- [§7.2 — Verifying an authentication assertion](https://www.w3.org/TR/webauthn-2/#sctn-verifying-assertion)
+- [FIDO CTAP 2.1 — client-to-authenticator protocol](https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html)
