@@ -1,0 +1,116 @@
+name: Accuracy Review
+
+# A "Security Architect" reviewer agent that checks the ACCURACY of protocol
+# content on every PR touching content/protocols/**. It grounds its review in
+# the primary specs (fetching each flow's specRefs) and posts a single summary
+# comment. ADVISORY ONLY — it never blocks merge; you decide.
+#
+# Reuses the same setup as the author workflow: ANTHROPIC_API_KEY secret + the
+# Claude GitHub App.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "content/protocols/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  accuracy-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Determine changed flow files
+        id: changed
+        run: |
+          git fetch -q origin "${{ github.event.pull_request.base.ref }}"
+          base="origin/${{ github.event.pull_request.base.ref }}"
+          files=$(git diff --name-only "$base...HEAD" -- 'content/protocols/**' | grep -E '\.(ts|mdx)$' || true)
+          echo "Changed flow files:"
+          echo "$files"
+          # Flatten to a space-separated list for the prompt.
+          echo "files=$(echo "$files" | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Security Architect review
+        if: steps.changed.outputs.files != ''
+        continue-on-error: true # advisory: a reviewer failure must not fail the job
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: >
+            --allowedTools Read,Glob,Grep,WebFetch,Write
+            --max-turns 35
+          prompt: |
+            You are a Security Architect and standards expert performing an
+            ACCURACY review of educational content about IAM / security
+            protocols. Accuracy is paramount: this content teaches developers,
+            so factual errors or fabricated details are serious defects.
+
+            Changed flow files in this PR:
+            ${{ steps.changed.outputs.files }}
+
+            Steps:
+            1. Read each changed steps.ts and content.mdx (and meta.ts if changed).
+            2. For every flow, read its `specRefs` and use WebFetch to retrieve
+               each referenced RFC / specification URL. Ground your review in
+               those primary sources.
+            3. Scrutinize for: nonexistent or misnamed parameters/headers/claims;
+               incorrect required-vs-optional designations; wrong or overstated
+               security properties; incorrect grant/flow semantics; mislabeled
+               front-channel vs back-channel (the `channel` field); unrealistic,
+               malformed, or wrong payloads (including JWT header/claims); and any
+               statement that would mis-teach the protocol.
+
+            Rules to avoid false positives:
+            - A finding may be severity "critical" or "major" ONLY if you cite the
+              specific spec section (with URL) that contradicts the content. If you
+              cannot ground a concern in a fetched source, mark it "minor" or omit
+              it.
+            - Do NOT invent spec section numbers. Do NOT flag stylistic
+              preferences as inaccuracies.
+
+            Output ONLY a JSON file at the repository root named `flow-review.json`
+            matching exactly this shape:
+            {
+              "overall": "clean" | "issues_found" | "unable_to_verify",
+              "summary": "1-3 sentence plain-language overview",
+              "specsConsulted": ["https://..."],
+              "findings": [
+                {
+                  "file": "content/protocols/<p>/flows/<f>/steps.ts",
+                  "location": "step id, field name, or short quoted text",
+                  "severity": "critical" | "major" | "minor",
+                  "claim": "what the content asserts",
+                  "problem": "why it is inaccurate or fabricated",
+                  "correction": "the accurate statement",
+                  "citation": "spec section + URL (REQUIRED for critical/major)"
+                }
+              ]
+            }
+            Set "overall" to "issues_found" if findings exist, "clean" if none, or
+            "unable_to_verify" if you could not fetch the specs. Do not modify any
+            other file. Do not commit, push, or open/approve the PR.
+
+      - name: Format review summary
+        if: always()
+        run: node scripts/format-review.mjs
+
+      - name: Post review comment
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f flow-review.md ]; then
+            echo "No review summary to post."; exit 0
+          fi
+          PR=${{ github.event.pull_request.number }}
+          # Keep one sticky comment: edit the bot's last comment, else create.
+          gh pr comment "$PR" --edit-last --body-file flow-review.md 2>/dev/null \
+            || gh pr comment "$PR" --body-file flow-review.md

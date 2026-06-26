@@ -88,7 +88,26 @@ to explain the security-critical fields.
   **fake** — never real secrets. For `jwt`, emit a genuinely base64url-decodable
   token so the live decoder works.
 - Prose should explain *why*, call out validation steps, and name the spec/RFC.
-- Add `specRefs` linking the authoritative spec.
+- Add accurate `specRefs` linking the authoritative spec — they are not just
+  citations for readers, they are what the accuracy reviewer fetches.
+
+## Accuracy review (every content PR)
+
+A **Security Architect** reviewer agent (`.github/workflows/flow-review.yml`)
+runs on every PR touching `content/protocols/**`. It reads your changed files,
+**fetches the `specRefs` you provided**, and checks the content against those
+primary sources for factual errors, fabricated/misnamed parameters, wrong
+required-vs-optional designations, incorrect security properties, mislabeled
+channels, and bad payloads. It posts a single summary comment.
+
+It is **advisory** (it does not block merge), but treat its findings seriously —
+the whole point of this project is accurate teaching. To make its job possible
+and reduce false positives:
+- Every factual claim should be **traceable to a cited spec**. Don't assert
+  protocol behavior you can't ground in `specRefs`.
+- Get parameter names, JWT claims, and required/optional status exactly right.
+- Label each step's `channel` correctly (front = via browser, direct = back
+  channel).
 
 ## What NOT to touch
 
