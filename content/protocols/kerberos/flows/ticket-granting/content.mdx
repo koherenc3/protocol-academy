@@ -1,0 +1,101 @@
+## What problem does this solve?
+
+On a network with many users and many services, how does a service know who is
+calling — without every service storing every user's password, and without the
+password being sent across the wire on each request? The naïve answer (send the
+password, or a hash of it, to each service) multiplies the places a credential
+can leak and replays trivially.
+
+**Kerberos** solves this with a trusted third party, the **Key Distribution
+Center (KDC)**, and **symmetric-key tickets**. The user authenticates *once* to
+the KDC and receives a **Ticket-Granting Ticket (TGT)**. From then on the client
+trades that TGT for short-lived, per-service tickets — proving its identity to
+each service **without the password ever travelling the network again.** That is
+single sign-on, built on shared secret keys and synchronized clocks rather than
+public-key certificates.
+
+## The cast of keys
+
+Kerberos is easiest to understand by tracking *who holds which key*:
+
+- **`K_client`** — the user's long-term key, derived from the password by the
+  string-to-key function. Held by the client and the KDC. Never transmitted.
+- **`K_tgs`** (the *krbtgt* key) — the TGS's long-term key. Held only by the KDC.
+  It seals every **TGT**.
+- **`K_service`** — each service's long-term key. Shared between that service and
+  the KDC. It seals that service's **service tickets**.
+- **`SK_tgs`** — a fresh **TGS session key**, minted in the AS exchange, shared
+  between client and TGS.
+- **`SK_svc`** — a fresh **service session key**, minted in the TGS exchange,
+  shared between client and service.
+
+The whole protocol is the disciplined movement of session keys between these
+long-term keys.
+
+## Walking the flow
+
+The flow has three exchanges (RFC 4120 §3.1–3.3):
+
+1. **AS exchange (authenticate once).** At **AS-REQ** the client sends
+   pre-authentication — a timestamp encrypted under `K_client` — proving it knows
+   the password. At **AS-REP** the AS returns a **TGT** (sealed with `K_tgs`,
+   opaque to the client) and the `SK_tgs` session key (sealed with `K_client`, so
+   only the user can open it). The client decrypts *only* the second envelope.
+
+2. **TGS exchange (get a service ticket).** At **TGS-REQ** the client forwards the
+   TGT untouched and proves possession of `SK_tgs` with a fresh **Authenticator**,
+   naming the service it wants (the SPN). At **TGS-REP** the TGS returns a
+   **service ticket** (sealed with `K_service`, again opaque to the client) and a
+   new `SK_svc` (sealed with `SK_tgs`). No password is used — that is the SSO
+   payoff.
+
+3. **AP exchange (use the service).** At **AP-REQ** the client presents the
+   service ticket and a new Authenticator sealed with `SK_svc`. The service
+   decrypts the ticket with **its own** `K_service`, recovers `SK_svc`, and checks
+   the Authenticator — all **offline, without ever contacting the KDC**. With
+   **Mutual authentication** on, **AP-REP** returns the client's timestamp
+   re-encrypted under `SK_svc`, proving the service is genuine too.
+
+The recurring shape to notice: each reply pairs an **opaque ticket** (sealed with
+a key the client does not have) with a **session-key envelope** (sealed with a key
+the client *does* have). The client can never read or forge a ticket — it only
+ever relays it and unwraps the matching session key.
+
+## Why the password never crosses the wire
+
+- The password is consumed locally to derive `K_client`; that key is used only to
+  decrypt the AS-REP envelope. With **pre-authentication** (PA-ENC-TIMESTAMP) the
+  client even proves password knowledge *before* the KDC issues a reply, which
+  blunts offline brute-force of harvested AS-REPs (RFC 6113).
+- Every subsequent proof of identity is an **Authenticator** keyed by a session
+  key, not the password. Compromising one short-lived session key does not reveal
+  the password or any long-term key.
+
+## Security notes
+
+- **Tickets are opaque to the client by design.** A TGT is sealed with `K_tgs`
+  and a service ticket with `K_service`. The client holds neither key, so it
+  cannot read, tamper with, or fabricate a ticket — it relays them verbatim. This
+  key separation is the core lesson of the flow.
+- **Ticket + Authenticator together authenticate.** A stolen ticket alone is
+  useless without the matching session key needed to build a fresh Authenticator.
+  Conversely the Authenticator alone carries no authorization. (Note this is why
+  *credential-theft* attacks target the session keys and TGTs in a host's memory,
+  e.g. pass-the-ticket — the ticket plus its key is what has value.)
+- **Clock skew is load-bearing.** Replay defence relies on timestamps inside
+  Authenticators being within the KDC/service skew window (commonly ±5 minutes)
+  and on a replay cache. Badly synchronized clocks break authentication; an
+  over-wide window weakens replay protection.
+- **Mutual authentication is opt-in.** Without `MUTUAL-REQUIRED` / an AP-REP, the
+  client authenticates to the service but does not verify the service. Toggle
+  **Mutual authentication** off above to see the one-way variant — and prefer the
+  mutual form when the client must be sure it is talking to the real service.
+- **Pre-authentication matters.** Principals with pre-auth disabled let anyone
+  request an AS-REP and grind the password-derived key offline (the basis of
+  "AS-REP roasting"). Keep PA-ENC-TIMESTAMP required.
+
+## Further reading
+
+- [RFC 4120 — The Kerberos Network Authentication Service (V5)](https://datatracker.ietf.org/doc/html/rfc4120)
+- [RFC 4120 §3 — the AS, TGS, and AP exchanges](https://datatracker.ietf.org/doc/html/rfc4120#section-3)
+- [RFC 6113 — A Generalized Framework for Kerberos Pre-Authentication](https://datatracker.ietf.org/doc/html/rfc6113)
