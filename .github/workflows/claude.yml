@@ -43,12 +43,14 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # For a labeled new-flow issue, give Claude an explicit task. For
-          # @claude comments, the action infers the task from the comment.
+          # For a labeled new-flow issue, give Claude an explicit task (the issue
+          # body is injected after the ===REQUEST=== marker). For @claude
+          # comments, prompt is empty and the action handles the comment itself.
           prompt: >
             ${{ (github.event_name == 'issues' && github.event.label.name == 'new-flow') &&
-            format('A New Flow Request issue (#{0}) was filed:\n\nTitle: {1}\n\n{2}\n\nImplement this as a new flow. Read AGENTS.md first and follow it exactly: add content/protocols/<protocol>/flows/<flow>/steps.ts and content.mdx (and meta.ts if it is a new protocol). Use realistic but fake payloads; for any JWT, emit a genuinely base64url-decodable token. Then run `npm install` and `npm run check` and fix everything until it passes. Open a pull request that closes #{0} and summarizes what you built.',
+            format('A new protocol flow was requested in issue #{0} ("{1}"). Read AGENTS.md and follow it exactly to implement it: copy content/_template/flow into content/protocols/<protocol-id>/flows/<flow-id>/, fill in steps.ts and content.mdx, and add meta.ts only if it is a new protocol. Do NOT enable the topology view unless the request asks for it. Use realistic but fake payloads; for any JWT emit a genuinely base64url-decodable token. Run "npm install" then "npm run check" and fix issues until it passes. Open a pull request that closes #{0} and summarizes what you built. The full request follows. ===REQUEST=== {2}',
             github.event.issue.number, github.event.issue.title, github.event.issue.body) || '' }}
-          # Let Claude run the project gate during its work.
+          # Enable file edits plus shell so Claude can run the project gate.
           claude_args: >
-            --allowedTools "Bash(npm:*),Bash(npx:*),Edit,Write,Read,Glob,Grep"
+            --allowedTools Edit,Write,Read,Glob,Grep,Bash
+            --max-turns 40
