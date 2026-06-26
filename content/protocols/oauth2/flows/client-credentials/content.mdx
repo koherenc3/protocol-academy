@@ -1,0 +1,50 @@
+## What problem does this solve?
+
+Sometimes there is **no user** to delegate from. A backend service, a cron job, or
+a daemon needs to call an API *as itself* — service-to-service. The **Client
+Credentials** grant (RFC 6749 §4.4) covers exactly this: the application
+authenticates with its own credentials (`client_id` / `client_secret`) and
+receives a scoped **access token** for the API. No browser, no redirect, no login
+screen, no consent.
+
+Because the client *is* the only party here, every hop is a **back channel**
+(direct server-to-server). There is no front channel to protect — which also means
+this grant is only appropriate for **confidential clients** that can actually keep
+a secret. A browser SPA or mobile app cannot, and must not, use it.
+
+## Walking the flow
+
+- **POST /token** — the client hits the token endpoint directly. It authenticates
+  with HTTP Basic (`Authorization: Basic base64(client_id:client_secret)`) and sets
+  **`grant_type=client_credentials`**, requesting just `scope=inventory:read`. There
+  is no authorization code to redeem and no user to prompt.
+- **200 Access token** — the server validates the client and returns a `Bearer`
+  token, its `expires_in` lifetime, and the granted `scope`. **Notice what's
+  missing: no `refresh_token`.** §4.4.3 says this grant MUST NOT issue one — when the
+  token expires, the client simply requests another with the same call.
+- **GET /api/inventory** — the client calls the resource server with
+  `Authorization: Bearer <token>`.
+- **200 Protected data** — the resource server validates the token and its scope,
+  then returns the inventory JSON. The data is service-level, not user-specific.
+
+## Security notes
+
+- **Protect the client_secret.** It is the only thing standing between an attacker
+  and a valid token. Store it in a secrets manager, rotate it, and never ship it to
+  a public client (browser/mobile). Prefer **private_key_jwt** / mTLS client
+  authentication over a shared secret where the authorization server supports it.
+- **Request least privilege.** Ask only for the scopes the service needs
+  (`inventory:read`), and have the resource server enforce them.
+- **Always use TLS.** A Bearer token is a password-equivalent; anyone who captures
+  it can replay it until it expires. Keep `expires_in` short.
+- **Don't reach for a refresh token.** Its absence is by design — re-running the
+  token request is the intended renewal path.
+- **This is authorization, not authentication of a person.** There is no user
+  identity in the token; never treat a client-credentials token as "who is logged
+  in." For user identity, use OpenID Connect.
+
+## Further reading
+
+- [RFC 6749 §4.4 — Client Credentials Grant](https://datatracker.ietf.org/doc/html/rfc6749#section-4.4)
+- [RFC 6749 §4.4.3 — Access Token Response (no refresh token)](https://datatracker.ietf.org/doc/html/rfc6749#section-4.4.3)
+- [RFC 6750 — Bearer Token Usage](https://datatracker.ietf.org/doc/html/rfc6750)
