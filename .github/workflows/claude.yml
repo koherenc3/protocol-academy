@@ -28,12 +28,19 @@ permissions:
 
 jobs:
   claude:
-    # Run when an issue gets the `new-flow` label (applying a label requires
-    # write/triage access, so this is inherently restricted), OR on a `@claude`
-    # mention — but only from the repo owner/members/collaborators, so strangers
-    # on this public repo can't spend API credits.
+    # On a PUBLIC repo anyone can open an issue, and the New Flow Request
+    # template auto-applies the `new-flow` label — which fires `issues.labeled`.
+    # So we must NOT trust the label alone. Both entry points are gated on the
+    # actor's association, so only the owner / org members / collaborators
+    # (i.e. people with write access) can spend API credits:
+    #   - new-flow label   → check the issue AUTHOR's association
+    #   - @claude mention  → check the commenter's association
+    # Outsiders can still file requests; to greenlight one, a trusted user
+    # comments "@claude ..." on it (or re-files it themselves).
     if: >
-      (github.event_name == 'issues' && github.event.label.name == 'new-flow') ||
+      (github.event_name == 'issues' &&
+        github.event.label.name == 'new-flow' &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)) ||
       (github.event_name != 'issues' &&
         contains(github.event.comment.body, '@claude') &&
         contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
