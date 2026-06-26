@@ -1,0 +1,54 @@
+name: Claude
+
+# Two entry points:
+#  1. An issue labeled `new-flow` → Claude builds the flow and opens a PR.
+#  2. Anyone writing `@claude ...` in an issue/PR/review comment → Claude responds.
+#
+# Setup required (one-time):
+#  - Add repo secret ANTHROPIC_API_KEY.
+#  - Allow GitHub Actions to create pull requests
+#    (Settings → Actions → General → Workflow permissions).
+
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  claude:
+    # Run when an issue gets the `new-flow` label (applying a label requires
+    # write/triage access, so this is inherently restricted), OR on a `@claude`
+    # mention — but only from the repo owner/members/collaborators, so strangers
+    # on this public repo can't spend API credits.
+    if: >
+      (github.event_name == 'issues' && github.event.label.name == 'new-flow') ||
+      (github.event_name != 'issues' &&
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # For a labeled new-flow issue, give Claude an explicit task. For
+          # @claude comments, the action infers the task from the comment.
+          prompt: >
+            ${{ (github.event_name == 'issues' && github.event.label.name == 'new-flow') &&
+            format('A New Flow Request issue (#{0}) was filed:\n\nTitle: {1}\n\n{2}\n\nImplement this as a new flow. Read AGENTS.md first and follow it exactly: add content/protocols/<protocol>/flows/<flow>/steps.ts and content.mdx (and meta.ts if it is a new protocol). Use realistic but fake payloads; for any JWT, emit a genuinely base64url-decodable token. Then run `npm install` and `npm run check` and fix everything until it passes. Open a pull request that closes #{0} and summarizes what you built.',
+            github.event.issue.number, github.event.issue.title, github.event.issue.body) || '' }}
+          # Let Claude run the project gate during its work.
+          claude_args: >
+            --allowedTools "Bash(npm:*),Bash(npx:*),Edit,Write,Read,Glob,Grep"

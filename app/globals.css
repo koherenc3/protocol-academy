@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-950 text-slate-200 antialiased;
+}
+
+/* Tailwind Typography tuning for MDX prose on the dark theme. */
+.prose-flow {
+  @apply prose prose-invert max-w-none prose-headings:scroll-mt-20
+    prose-h2:text-xl prose-h2:font-semibold prose-h2:text-slate-100
+    prose-h3:text-base prose-h3:text-slate-200
+    prose-a:text-amber-300 prose-code:text-amber-200
+    prose-code:before:content-none prose-code:after:content-none;
+}

@@ -1,0 +1,50 @@
+## What problem does this solve?
+
+You want a third-party app to access *some* of your data on another service —
+without handing it your password and without giving it more than it needs. OAuth
+2.0 is a **delegated authorization** framework: the user authenticates at the
+service they already trust (the **authorization server**), and the app receives a
+scoped, revocable **access token** instead of credentials.
+
+The **Authorization Code** grant is the workhorse for anything with a browser. It
+splits the exchange into two channels:
+
+- **Front channel** (via the browser, visible in the URL): used only to deliver a
+  short-lived, single-use **authorization code**.
+- **Back channel** (direct server-to-server, or a secured fetch): used to swap
+  that code for **tokens**. Tokens never travel through the browser's address bar.
+
+## Why PKCE?
+
+The front channel is leaky — codes can end up in browser history, logs, or be
+intercepted by a malicious app registered on the same redirect scheme. **PKCE**
+(RFC 7636) closes this with a simple challenge/response:
+
+1. The client invents a random secret, the **code_verifier**.
+2. It sends only the **code_challenge** (`SHA-256` of the verifier) when starting
+   the flow.
+3. When redeeming the code, it presents the original **code_verifier**.
+4. The server re-hashes the verifier and rejects the exchange unless it matches.
+
+A stolen code is now worthless to anyone who doesn't also hold the verifier. Toggle
+**PKCE** off in the diagram to compare it with the older confidential-client
+variant that relies on a `client_secret`.
+
+## Things to notice in the flow
+
+- **`state`** is independent of PKCE and is always required — it ties the callback
+  back to the request the client started, defeating CSRF.
+- The **client never sees the user's password**; authentication happens entirely
+  at the authorization server.
+- The **access token is opaque** to the client in plain OAuth 2.0. The client just
+  forwards it as a `Bearer` credential. (This is exactly the gap OpenID Connect
+  fills — see the OIDC flow.)
+- **Scopes** (`read:profile`, `read:files`) bound what the token can do.
+
+## Common pitfalls
+
+- Treating the access token as proof of *who the user is*. It isn't — it's proof of
+  *what the bearer may do*. Use OIDC for identity.
+- Skipping the `state` check on the callback.
+- Using the Implicit grant (tokens in the URL fragment). It's deprecated; use
+  Authorization Code + PKCE everywhere, including SPAs.

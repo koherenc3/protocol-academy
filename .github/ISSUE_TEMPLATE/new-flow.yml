@@ -1,0 +1,80 @@
+name: New Flow Request
+description: Request a new protocol flow to be built (kicks off the @claude agent).
+title: "[flow] <protocol>: <flow name>"
+labels: ["new-flow"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill this out and submit. The `new-flow` label triggers the Claude Code
+        action, which will implement the flow per `AGENTS.md` and open a PR with a
+        Vercel preview for you to review.
+  - type: input
+    id: protocol
+    attributes:
+      label: Protocol
+      description: Existing protocol id, or name a new one (lowercase-kebab-case id).
+      placeholder: "oauth2  (or: saml — new protocol)"
+    validations:
+      required: true
+  - type: input
+    id: flow_title
+    attributes:
+      label: Flow title & id
+      description: Human title plus the kebab-case folder/id.
+      placeholder: "Client Credentials  /  client-credentials"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: One-line summary
+      description: What does this flow accomplish?
+      placeholder: "Machine-to-machine auth where the app authenticates as itself, no user."
+    validations:
+      required: true
+  - type: textarea
+    id: actors
+    attributes:
+      label: Actors
+      description: One per line — label and role (user/browser/client/authServer/resourceServer/system).
+      placeholder: |
+        Client App — client
+        Authorization Server — authServer
+        Resource Server — resourceServer
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Ordered steps
+      description: One message per line — from → to: label. Note any request/response payloads.
+      placeholder: |
+        Client → Authorization Server: POST /token (grant_type=client_credentials, with client_secret)
+        Authorization Server → Client: access_token JSON response
+        Client → Resource Server: GET /api with Bearer token
+        Resource Server → Client: 200 protected data
+    validations:
+      required: true
+  - type: textarea
+    id: params
+    attributes:
+      label: Toggle parameters (optional)
+      description: Any on/off variations to demonstrate (e.g. "mTLS vs client_secret").
+    validations:
+      required: false
+  - type: textarea
+    id: specs
+    attributes:
+      label: Spec / RFC references
+      description: Links to authoritative sources for accuracy.
+      placeholder: "RFC 6749 §4.4 — https://datatracker.ietf.org/doc/html/rfc6749#section-4.4"
+    validations:
+      required: true
+  - type: checkboxes
+    id: ack
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: Payloads should be realistic but contain no real secrets.
+          required: true

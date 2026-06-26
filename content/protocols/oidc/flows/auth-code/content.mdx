@@ -1,0 +1,52 @@
+## OAuth gives access; OIDC gives identity
+
+OAuth 2.0 answers *"is this app allowed to do X?"* It deliberately says nothing
+about **who** the user is — the access token is opaque, and using it as a login
+signal is a classic security mistake. **OpenID Connect** is a small standard layer
+on top of OAuth 2.0 that adds authentication done right.
+
+The flow is the same Authorization Code shape you already know. Three additions
+turn it into OIDC:
+
+1. **`scope=openid`** — the switch that requests OIDC behavior. No `openid`, no ID
+   token.
+2. **`nonce`** — a random value echoed back inside the ID token to prevent replay.
+3. **`id_token`** — returned alongside the access token: a **signed JWT** the
+   client reads and validates to learn the user's identity.
+
+## The ID token
+
+Step through to **“Validate id_token”** and expand the JWT. It has three parts:
+
+- **Header** — the signing algorithm (`RS256`) and `kid` (which key signed it).
+- **Payload** — the **claims**: `iss`, `sub`, `aud`, `exp`, `iat`, `nonce`, plus
+  profile claims like `name` and `email`.
+- **Signature** — proves the token came from the provider and wasn't tampered with.
+  The client verifies it using the provider's public keys (from its JWKS endpoint).
+
+### Validation is not optional
+
+A JWT is just base64url text until you check it. A relying party **must**:
+
+- verify the **signature** against the provider's published keys;
+- confirm **`iss`** is the expected provider;
+- confirm **`aud`** equals its own `client_id`;
+- confirm **`exp`** hasn't passed;
+- confirm **`nonce`** matches the value it sent in the authorization request.
+
+`sub` is the stable per-user identifier you should key accounts on — not email,
+which can change.
+
+## ID token vs. access token vs. UserInfo
+
+- **ID token** → for the **client**, to establish *who logged in*. Read it, don't
+  forward it to APIs.
+- **Access token** → for **APIs**, to authorize calls. Opaque to the client.
+- **UserInfo endpoint** → optional; call it with the access token to fetch extra
+  claims you didn't pack into the ID token.
+
+## Relationship to "OpenID Connect" in your original list
+
+OIDC *is* OpenID Connect — they're the same thing. So the four protocols you set
+out to cover are really three distinct ones (OAuth 2.0, OIDC, SAML, Kerberos), with
+OAuth and OIDC sharing this flow as their backbone.
