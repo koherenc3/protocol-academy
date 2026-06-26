@@ -8,7 +8,12 @@ import type { ProtocolMeta } from "@/lib/types";
 const meta: ProtocolMeta = {
   id: "example-protocol", // = the folder name; lowercase-kebab-case
   name: "Example Protocol",
-  category: "Authentication", // or "Authorization", "Federation", etc.
+  // Coarse landing-page bucket — use ONE of the canonical three:
+  //   "Authentication" | "Authorization" | "Workload Identity"
+  category: "Authentication",
+  // Finer flavor shown as the card badge, e.g. "Federation / SSO",
+  // "Passwordless", "Network", "Token-based", "Delegation", "Attestation".
+  subtype: "Federation / SSO",
   summary: "One-sentence description shown on the landing card.",
   order: 99, // lower sorts first on the landing page
 };

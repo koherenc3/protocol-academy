@@ -45,6 +45,20 @@ The Vercel **preview deployment** on the PR must also render the new flow page a
 2. Add at least one flow as above under `flows/`.
 3. Run the **Definition of done** commands.
 
+**`meta.category` MUST be one of the canonical buckets** (this drives landing-page
+grouping — do not invent new ones):
+
+| `category` | Use for |
+|---|---|
+| `Authentication` | Proving who a user is — SSO, federation, passwordless, network/ticket auth (OIDC, SAML, Kerberos, WebAuthn) |
+| `Authorization` | Delegated access, not identity (OAuth 2.0 and its grants) |
+| `Workload Identity` | Machine-to-machine identity (SPIFFE/SPIRE, mTLS) |
+
+Put the finer flavor in **`meta.subtype`** (the card badge), e.g. `Federation / SSO`,
+`Passwordless`, `Network`, `Token-based`, `Delegation`, `Attestation`. If a request
+asks for a category outside the three above, map it to the closest bucket and use
+`subtype` for the specific flavor.
+
 ## The `Flow` contract (authoritative: `lib/schema.ts`)
 
 - **ids**: lowercase-kebab-case (`^[a-z0-9-]+$`).

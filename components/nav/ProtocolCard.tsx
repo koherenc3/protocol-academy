@@ -12,8 +12,10 @@ export function ProtocolCard({ protocol }: { protocol: Protocol }) {
         <h3 className="text-lg font-semibold text-slate-100 group-hover:text-amber-200">
           {protocol.name}
         </h3>
-        <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">
-          {protocol.category}
+        {/* Card sits under its category header, so show the finer sub-type here
+            (fall back to category if a protocol hasn't set one). */}
+        <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">
+          {protocol.subtype ?? protocol.category}
         </span>
       </div>
       <p className="mt-1.5 text-sm leading-relaxed text-slate-400">

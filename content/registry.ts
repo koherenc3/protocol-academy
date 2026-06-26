@@ -60,6 +60,10 @@ export function getAllFlowParams(): { protocol: string; flow: string }[] {
 }
 
 /** Group protocols by their `category` for the landing page. */
+// Preferred display order for the coarse landing-page buckets; unknown
+// categories sort after these, alphabetically.
+const CATEGORY_ORDER = ["Authentication", "Authorization", "Workload Identity"];
+
 export function getProtocolsByCategory(): { category: string; protocols: Protocol[] }[] {
   const byCat = new Map<string, Protocol[]>();
   for (const p of protocols) {
@@ -67,5 +71,11 @@ export function getProtocolsByCategory(): { category: string; protocols: Protoco
     list.push(p);
     byCat.set(p.category, list);
   }
-  return [...byCat.entries()].map(([category, protocols]) => ({ category, protocols }));
+  const rank = (c: string) => {
+    const i = CATEGORY_ORDER.indexOf(c);
+    return i === -1 ? CATEGORY_ORDER.length : i;
+  };
+  return [...byCat.entries()]
+    .map(([category, protocols]) => ({ category, protocols }))
+    .sort((a, b) => rank(a.category) - rank(b.category) || a.category.localeCompare(b.category));
 }

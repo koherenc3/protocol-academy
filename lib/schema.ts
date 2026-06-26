@@ -132,7 +132,12 @@ export const FlowSchema = z.object({
 export const ProtocolMetaSchema = z.object({
   id: slug,
   name: z.string().min(1),
+  // Coarse grouping for the landing page. Use one of the canonical buckets:
+  // "Authentication" | "Authorization" | "Workload Identity".
   category: z.string().min(1),
+  // Optional finer flavor shown as a badge on the card (e.g. "Federation / SSO",
+  // "Passwordless", "Network", "Token-based", "Delegation", "Attestation").
+  subtype: z.string().min(1).optional(),
   summary: z.string().min(1),
   // Optional ordering hint for the landing page.
   order: z.number().optional(),
