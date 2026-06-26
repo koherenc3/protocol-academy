@@ -6,7 +6,7 @@ export const SITE = {
   repoUrl: "https://github.com/koherenc3/protocol-academy",
   newFlowUrl:
     "https://github.com/koherenc3/protocol-academy/issues/new?template=new-flow.yml",
-  // Production URL for absolute metadata (OG). Set NEXT_PUBLIC_SITE_URL in
-  // Vercel to your domain; falls back to localhost for local dev.
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  // Production URL for absolute metadata (OG/canonical). Override with
+  // NEXT_PUBLIC_SITE_URL (e.g. a custom domain); defaults to the Vercel URL.
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://protocol-academy-iota.vercel.app",
 } as const;
