@@ -1,0 +1,83 @@
+## The secret-zero problem
+
+Every credential a workload holds to prove its identity — an API key, a database
+password, a client secret — had to be delivered to it somehow. That first secret,
+**"secret zero,"** is the hardest to protect: bake it into an image and it leaks;
+mount it from a vault and the vault needs *its own* credential to talk to. The
+problem is turtles all the way down.
+
+**SPIFFE** (Secure Production Identity Framework For Everyone) breaks the regress.
+A workload gets a cryptographic identity — a short-lived certificate — **without
+ever being given a secret to bootstrap it.** Instead, identity is derived from
+*what the workload is*: which node it runs on, which namespace and service account,
+which user it executes as. **SPIRE** is the reference implementation that performs
+that derivation and issues the certificates.
+
+## The two identity documents
+
+- A **SPIFFE ID** is a URI like `spiffe://example.org/ns/prod/sa/web`. The part
+  before the first path segment is the **trust domain** (`example.org`); the rest
+  names the workload.
+- An **SVID** (SPIFFE Verifiable Identity Document) is the signed proof of a SPIFFE
+  ID. This flow issues an **X.509-SVID**: a normal X.509 certificate whose **URI
+  SAN** carries the SPIFFE ID. (SPIFFE also defines a **JWT-SVID** — a JWT with the
+  ID in `sub` — for contexts where mTLS isn't available.)
+
+## Walking the flow
+
+Trust is bootstrapped in two layers of **attestation** — proving an identity by
+observed facts rather than a presented secret.
+
+1. **Node attestation** — at **AttestAgent (node attestation)**, the SPIRE Agent
+   proves the *node's* identity to the SPIRE Server. Here it presents a Kubernetes
+   **projected service-account token** (a JWT, audience-bound to `spire-server`).
+   The platform vouches for the node; the node holds no static SPIRE secret. The
+   Server replies (**Agent SVID + bundle + entries**) with the agent's own SVID, the
+   **trust bundle**, and the **registration entries** this agent may issue.
+
+2. **Workload attestation** — at **FetchX509SVID (no secret)**, the workload calls
+   the Workload API over a Unix domain socket and presents **nothing** — no token,
+   no password. The agent reads the caller's PID from the socket's peer credentials
+   and, at **Workload attestation (selectors)**, inspects the process to derive
+   **selectors** (`unix:uid:1000`, `k8s:ns:prod`, `k8s:sa:web`). It matches those
+   against its registration entries to decide the workload's SPIFFE ID.
+
+The agent then obtains a signed leaf (**BatchNewX509SVID → Signed X.509-SVID**),
+delivers the **certificate, private key, and bundle** to the workload, and the
+workload uses the SVID for **mTLS** against the peer, which authorizes on the
+peer's SPIFFE ID.
+
+## Why there is no secret to steal
+
+- The workload **generates its own private key** locally; it never travels the
+  network, and the agent signs only the public half (the CSR).
+- The workload **proves identity by what it is** — its kernel- and
+  orchestrator-observed selectors — which it cannot forge and cannot leak.
+- SVIDs are **short-lived** (≈1 hour) and the agent **pushes rotations** over the
+  streaming Workload API, so continuous rotation replaces revocation in the common
+  case.
+
+## Security notes
+
+- **The SPIFFE ID lives in the URI SAN, not the CN.** Per the X.509-SVID spec a
+  leaf has exactly one URI SAN and the Common Name must not be used for identity.
+  Validators must read the URI SAN.
+- **Selectors are AND-matched.** An entry applies only when *every* one of its
+  selectors is present on the caller. Registering broad selectors (e.g. a uid
+  shared by many pods) over-grants identity — scope entries tightly.
+- **Attestation data must be audience/replay bound.** The projected
+  service-account token is bound to `spire-server`; a token minted for the
+  Kubernetes API audience must not be accepted as node attestation.
+- **SPIFFE gives identity, not authorization.** The peer still enforces an explicit
+  policy over SPIFFE IDs. Mutual TLS authenticates *both* ends — don't treat a valid
+  certificate as automatically authorized.
+- **Validate against the trust bundle, not the network.** A workload trusts a peer
+  because its SVID chains to the trust domain CA, never because of its IP or DNS name.
+
+## Further reading
+
+- [SPIFFE Overview](https://spiffe.io/docs/latest/spiffe-about/overview/)
+- [SPIFFE-ID specification](https://github.com/spiffe/spiffe/blob/main/standards/SPIFFE-ID.md)
+- [X.509-SVID specification](https://github.com/spiffe/spiffe/blob/main/standards/X509-SVID.md)
+- [JWT-SVID specification](https://github.com/spiffe/spiffe/blob/main/standards/JWT-SVID.md)
+- [SPIRE concepts: attestation & the Workload API](https://spiffe.io/docs/latest/spire-about/spire-concepts/)
