@@ -1,0 +1,82 @@
+## What problem does this solve?
+
+An organization runs dozens of applications but wants its people to log in **once**,
+against **one** identity system, and never hand their corporate password to each
+individual app. SAML 2.0's **Web Browser SSO Profile** is the classic enterprise
+answer: an application — the **Service Provider (SP)** — delegates authentication to a
+central **Identity Provider (IdP)**. The IdP authenticates the user and returns a
+**signed XML assertion** vouching for them. The user's credentials only ever touch the
+IdP; the SP learns who the user is from a cryptographically-signed document, not from a
+password.
+
+The browser is the only thing the SP and IdP share. SAML therefore moves its messages
+**through the browser** using two HTTP *bindings*:
+
+- **HTTP-Redirect** carries the small request *to* the IdP — the `<samlp:AuthnRequest>`
+  is DEFLATE-compressed and base64-encoded into a URL query parameter.
+- **HTTP-POST** carries the larger, signed response *back* — the IdP returns an
+  auto-submitting HTML form whose hidden `SAMLResponse` field is posted to the SP's
+  **Assertion Consumer Service (ACS)**.
+
+## Walking the flow
+
+Starting **SP-initiated** (the default):
+
+1. At **GET /reports (protected)** the user asks the SP for a page they're not yet
+   logged in for.
+2. The SP doesn't prompt for a password — at **302 → IdP SSO (SAMLRequest)** it
+   redirects the browser to the IdP, packing the `<samlp:AuthnRequest>` into the
+   `SAMLRequest` parameter and remembering where the user was headed in `RelayState`.
+3. **GET /sso (decoded AuthnRequest)** shows that request decoded: its `Issuer` (who's
+   asking), `AssertionConsumerServiceURL` (where to send the answer), and a unique `ID`
+   the IdP will echo back.
+4. The IdP authenticates the user — **Login form** then **Submits credentials** — *only
+   if* there's no existing IdP session. An existing session is what makes it *single*
+   sign-on: these two steps are skipped and the assertion is issued immediately.
+5. **Auto-POST form (signed SAMLResponse)** is the centerpiece. The IdP returns a signed
+   `<samlp:Response>` wrapping a signed `<saml:Assertion>`. Read it closely: **Subject /
+   NameID** (who), **Conditions / AudienceRestriction** (for whom and for how long),
+   **AuthnStatement** (how they authenticated), **AttributeStatement** (profile claims),
+   and **`ds:Signature`** (proof of origin and integrity).
+6. The browser **POSTs the response to the SP's ACS**, the SP **validates the assertion**
+   (signature, issuer, audience, timing, recipient, InResponseTo), and at **302 →
+   /reports (session set)** it establishes its *own* session cookie and drops the user at
+   the page they originally wanted.
+
+Toggle **IdP-initiated** on to see the other mode: steps 1–3 disappear. The user starts
+at the IdP portal (**Opens app from IdP portal**) and the IdP POSTs an **unsolicited**
+response — note it carries **no `InResponseTo`**, because there was no request to respond
+to.
+
+## Security notes
+
+SAML's security lives almost entirely in **what the SP checks** when it consumes the
+assertion. Skipping any of these has caused real authentication bypasses:
+
+- **Verify the signature — correctly.** The SP must verify the XML-DSig signature against
+  the IdP's certificate from trusted **metadata**, and confirm the signature actually
+  covers the assertion it's about to trust. XML Signature Wrapping (XSW) attacks smuggle a
+  second, unsigned assertion past parsers that verify one element but read another.
+- **Enforce the `AudienceRestriction`.** The assertion is scoped to one SP. The SP must
+  confirm its own `entityID` is the `<Audience>`, or an assertion minted for a different
+  SP could be replayed against it.
+- **Enforce `NotBefore` / `NotOnOrAfter`.** Bearer assertions are usable by whoever holds
+  them, so their validity window is deliberately short. The SP rejects anything outside it
+  (allowing a little clock skew) and should cache consumed assertion `ID`s until expiry to
+  block replay.
+- **Check `Recipient` and (SP-initiated) `InResponseTo`.** The `SubjectConfirmationData`
+  `Recipient` must equal the SP's ACS URL, and `InResponseTo` must match an
+  `AuthnRequest` the SP actually sent.
+- **IdP-initiated SSO is weaker.** With no `AuthnRequest` there is no `InResponseTo` to
+  correlate, so the SP cannot distinguish a user-initiated login from an injected one —
+  exposing it to login CSRF. Prefer SP-initiated where you can.
+- **The SP never sees the password.** Credentials are entered only at the IdP. That
+  isolation — plus a per-SP, opaque `NameID` to avoid cross-SP correlation — is the core
+  privacy/security benefit of federation.
+
+## Further reading
+
+- [SAML 2.0 Core — assertions & protocols](https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf)
+- [SAML 2.0 Profiles — Web Browser SSO Profile](https://docs.oasis-open.org/security/saml/v2.0/saml-profiles-2.0-os.pdf)
+- [SAML 2.0 Bindings — HTTP-Redirect / HTTP-POST](https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf)
+- [SAML 2.0 Technical Overview](https://www.oasis-open.org/committees/download.php/27819/sstc-saml-tech-overview-2.0-cd-02.pdf)
