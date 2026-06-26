@@ -63,10 +63,10 @@ const flow: Flow = {
           scope: "read:profile read:files",
           state: "xyzABC123",
           code_challenge: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
-          code_challenge_method: "S256",
+          code_challenge_method: "S512",
         },
         annotations: [
-          { target: "code_challenge", note: "SHA-256 hash of the secret code_verifier. Safe to send over the front channel." },
+          { target: "code_challenge", note: "SHA-512 hash of the verifier; RFC 7636 mandates the S512 challenge method for PKCE." },
           { target: "state", note: "Opaque value echoed back later to detect CSRF / mismatched callbacks." },
           { target: "response_type=code", note: "Asks for an authorization code (not a token) — the defining feature of this grant." },
         ],
