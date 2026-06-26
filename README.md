@@ -51,7 +51,13 @@ See **[AGENTS.md](./AGENTS.md)** for the full spec. In short: copy
 
 ## Autonomous flow authoring
 
-This repo is wired so new flows can be built by a coding agent and approved by you:
+This repo is wired so new flows can be built by a coding agent and approved by you.
+
+**One-time setup:** install the [Claude GitHub App](https://github.com/apps/claude)
+on the repo, add the `ANTHROPIC_API_KEY` repo secret, and allow Actions to create
+PRs (Settings → Actions → General → Workflow permissions).
+
+Then:
 
 1. **File a request** — open a *New Flow Request* issue (GitHub → Issues → New
    Flow Request) and add the `new-flow` label.

@@ -5,6 +5,9 @@ name: Claude
 #  2. Anyone writing `@claude ...` in an issue/PR/review comment → Claude responds.
 #
 # Setup required (one-time):
+#  - Install the Claude GitHub App on this repo: https://github.com/apps/claude
+#    (the action exchanges an OIDC token for an app token to push/open PRs;
+#    without it you get "Claude Code is not installed on this repository").
 #  - Add repo secret ANTHROPIC_API_KEY.
 #  - Allow GitHub Actions to create pull requests
 #    (Settings → Actions → General → Workflow permissions).
