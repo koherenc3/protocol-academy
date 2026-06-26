@@ -48,7 +48,7 @@ body:
     id: steps
     attributes:
       label: Ordered steps
-      description: One message per line — from → to: label. Note any request/response payloads.
+      description: "One message per line — from → to: label. Note any request/response payloads."
       placeholder: |
         Client → Authorization Server: POST /token (grant_type=client_credentials, with client_secret)
         Authorization Server → Client: access_token JSON response
