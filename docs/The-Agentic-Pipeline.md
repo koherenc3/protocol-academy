@@ -19,9 +19,11 @@ rather than authoring it.
 ## Stage 1 — The request
 
 A contributor opens a **New Flow Request** issue
-(`.github/ISSUE_TEMPLATE/new-flow.yml`) — a structured form: protocol, flow
-title/id, actors, ordered steps, payloads, and **spec references**. Submitting it
-auto-applies the `new-flow` label.
+(`.github/ISSUE_TEMPLATE/new-flow.yml`) — a deliberately simple form: two
+required fields (the protocol/flow name and what it should teach) plus optional
+constraints and an anchor spec/RFC. The contributor does **not** hand-author
+actors, steps, payloads, or spec references — the agent researches the spec and
+derives all of that. Submitting it auto-applies the `new-flow` label.
 
 **Security gate (who can spawn work).** On a *public* repo anyone can open an
 issue, so the trigger is gated on the actor's GitHub association, not on the label
@@ -49,6 +51,9 @@ The labeled issue triggers `claude.yml`, which runs
 `anthropics/claude-code-action`. The workflow injects the issue body into a
 prompt that tells the agent to follow `AGENTS.md` exactly:
 
+- Research the spec first: `WebFetch` the authoritative RFC/standard and derive
+  the actors, ordered steps, payloads, and `specRefs` from it (the request may be
+  just a protocol name and a sentence of intent).
 - Copy `content/_template/flow/` into `content/protocols/<p>/flows/<f>/`.
 - Fill in `steps.ts` (typed actors/steps/payloads) and `content.mdx` (prose);
   add `meta.ts` if it's a new protocol.
@@ -56,7 +61,7 @@ prompt that tells the agent to follow `AGENTS.md` exactly:
 - Run `npm install && npm run check` and fix until green.
 - Open a PR that closes the issue.
 
-Tool access is scoped via `claude_args` (`--allowedTools Edit,Write,Read,Glob,Grep,Bash --max-turns 40`).
+Tool access is scoped via `claude_args` (`--allowedTools Edit,Write,Read,Glob,Grep,Bash,WebFetch --max-turns 40`).
 Authentication is two-part: the **`ANTHROPIC_API_KEY`** secret (model calls) and
 the **Claude GitHub App** (the OIDC→app-token exchange that lets the agent push a
 branch and open the PR).
@@ -109,7 +114,7 @@ Merge to `main` → CI → Vercel production deploy.
 |---|---|---|
 | Trigger | `new-flow` label / `@claude` (trusted users) | PR touching `content/protocols/**` |
 | Job | Implement the request | Fact-check it against specs |
-| Tools | Edit/Write/Read/Glob/Grep/Bash | Read/Glob/Grep/**WebFetch**/Write |
+| Tools | Edit/Write/Read/Glob/Grep/Bash/**WebFetch** | Read/Glob/Grep/**WebFetch**/Write |
 | Output | A pull request | A verdict + PR comment |
 | Blocks merge? | n/a | No (advisory) |
 

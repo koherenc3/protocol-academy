@@ -30,8 +30,10 @@ The canonical spec is **`AGENTS.md`** at the repo root. In short:
 
 To have the **agent** do it: file a *New Flow Request* issue and (as a trusted
 user) ensure it carries the `new-flow` label — or comment `@claude …` on any
-issue. Provide **strong `specRefs`**: they're what the reviewer fetches to
-fact-check the result.
+issue. You only need the protocol/flow name and what it should teach; the agent
+researches the spec and derives the actors, steps, payloads, and `specRefs`.
+Optionally drop in an **anchor spec/RFC** to point it at the right source — the
+reviewer independently checks the canonical spec regardless.
 
 ### The flow contract (essentials)
 - ids are lowercase-kebab-case; `protocolId` matches the parent folder.
