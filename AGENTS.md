@@ -30,6 +30,15 @@ npm run build             # next build (static export)
 The Vercel **preview deployment** on the PR must also render the new flow page at
 `/<protocol-id>/<flow-id>/`.
 
+## Step 0: Research first
+
+A request may be just a protocol name and a sentence of intent. Before writing
+anything, find the authoritative spec (WebFetch the RFC / standard) and derive the
+actors, the ordered steps, and the payloads **from it** — not from guesswork.
+Populate `specRefs` with the exact sections you used; they are real citations the
+accuracy reviewer fetches, so they must be precise. Derive the lowercase-kebab-case
+`<protocol-id>` and `<flow-id>` from the request. Then proceed below.
+
 ## Adding a flow to an EXISTING protocol
 
 1. Copy `content/_template/flow/` to
@@ -102,15 +111,15 @@ to explain the security-critical fields.
   **fake** — never real secrets. For `jwt`, emit a genuinely base64url-decodable
   token so the live decoder works.
 - Prose should explain *why*, call out validation steps, and name the spec/RFC.
-- Add accurate `specRefs` linking the authoritative spec — they are not just
-  citations for readers, they are what the accuracy reviewer fetches.
+- Add accurate `specRefs` linking the authoritative spec you researched — they are
+  not just citations for readers, they are what the accuracy reviewer fetches.
 
 ## Accuracy review (every content PR)
 
 A **Security Architect** reviewer agent (`.github/workflows/flow-review.yml`)
 runs on every PR touching `content/protocols/**`. It reads your changed files,
-**fetches the `specRefs` you provided**, and checks the content against those
-primary sources for factual errors, fabricated/misnamed parameters, wrong
+**fetches the `specRefs` you researched** (and independently checks the canonical
+spec for the protocol), and checks the content against those primary sources for factual errors, fabricated/misnamed parameters, wrong
 required-vs-optional designations, incorrect security properties, mislabeled
 channels, and bad payloads. It posts a single summary comment.
 

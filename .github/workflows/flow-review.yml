@@ -64,7 +64,12 @@ jobs:
             1. Read each changed steps.ts and content.mdx (and meta.ts if changed).
             2. For every flow, read its `specRefs` and use WebFetch to retrieve
                each referenced RFC / specification URL. Ground your review in
-               those primary sources.
+               those primary sources. In addition to the `specRefs` provided in
+               the file, independently determine the canonical RFC / standard for
+               this protocol and verify against it — the author chose these refs,
+               so do NOT assume they are complete or authoritative. If the flow
+               cites a weak, wrong, or non-canonical source, that is itself a
+               finding.
             3. Scrutinize for: nonexistent or misnamed parameters/headers/claims;
                incorrect required-vs-optional designations; wrong or overstated
                security properties; incorrect grant/flow semantics; mislabeled

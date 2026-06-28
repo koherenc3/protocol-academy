@@ -58,9 +58,10 @@ jobs:
           # comments, prompt is empty and the action handles the comment itself.
           prompt: >
             ${{ (github.event_name == 'issues' && github.event.label.name == 'new-flow') &&
-            format('A new protocol flow was requested in issue #{0} ("{1}"). Read AGENTS.md and follow it exactly to implement it: copy content/_template/flow into content/protocols/<protocol-id>/flows/<flow-id>/, fill in steps.ts and content.mdx, and add meta.ts only if it is a new protocol. Do NOT enable the topology view unless the request asks for it. Use realistic but fake payloads; for any JWT emit a genuinely base64url-decodable token. Run "npm install" then "npm run check" and fix issues until it passes. Open a pull request that closes #{0} and summarizes what you built. The full request follows. ===REQUEST=== {2}',
+            format('A new protocol flow was requested in issue #{0} ("{1}"). The request may be brief — possibly just a protocol name and a sentence of intent. Do the authoring research yourself: use WebFetch to find the authoritative RFC/specification, and from it derive the canonical actors, the ordered steps, realistic payloads, and accurate specRefs (cite the exact spec sections you relied on). Then read AGENTS.md and follow it exactly: derive lowercase-kebab-case <protocol-id> and <flow-id> from the request, copy content/_template/flow into content/protocols/<protocol-id>/flows/<flow-id>/, fill in steps.ts and content.mdx, and add meta.ts only if it is a new protocol. Do NOT enable the topology view unless the request asks for it. Use realistic but fake payloads; for any JWT emit a genuinely base64url-decodable token. Run "npm install" then "npm run check" and fix issues until it passes. Open a pull request that closes #{0} and summarizes what you built and which specs you used. The full request follows. ===REQUEST=== {2}',
             github.event.issue.number, github.event.issue.title, github.event.issue.body) || '' }}
-          # Enable file edits plus shell so Claude can run the project gate.
+          # Enable file edits, shell (to run the project gate), and WebFetch so
+          # Claude can research the spec itself from a brief plain-language request.
           claude_args: >
-            --allowedTools Edit,Write,Read,Glob,Grep,Bash
+            --allowedTools Edit,Write,Read,Glob,Grep,Bash,WebFetch
             --max-turns 40

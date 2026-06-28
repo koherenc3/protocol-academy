@@ -1,80 +1,51 @@
 name: New Flow Request
-description: Request a new protocol flow to be built (kicks off the @claude agent).
+description: Request a new protocol flow — describe it in plain language; the agent builds it.
 title: "[flow] <protocol>: <flow name>"
 labels: ["new-flow"]
 body:
   - type: markdown
     attributes:
       value: |
-        Fill this out and submit. The `new-flow` label triggers the Claude Code
-        action, which will implement the flow per `AGENTS.md` and open a PR with a
-        Vercel preview for you to review.
+        Describe the flow you want in plain language. You don't need to spell out
+        actors, steps, payloads, or RFC links — the `@claude` agent researches the
+        spec and authors all of that, then opens a PR with a Vercel preview for you
+        to review. Add as much or as little detail as you like.
   - type: input
-    id: protocol
+    id: request
     attributes:
-      label: Protocol
-      description: Existing protocol id, or name a new one (lowercase-kebab-case id).
-      placeholder: "oauth2  (or: saml — new protocol)"
-    validations:
-      required: true
-  - type: input
-    id: flow_title
-    attributes:
-      label: Flow title & id
-      description: Human title plus the kebab-case folder/id.
-      placeholder: "Client Credentials  /  client-credentials"
+      label: Protocol & flow
+      description: Name the protocol and flow in whatever form is natural. The agent derives the ids.
+      placeholder: "SCIM 2.0 — user provisioning   (or: OAuth 2.0 device authorization grant)"
     validations:
       required: true
   - type: textarea
-    id: summary
+    id: intent
     attributes:
-      label: One-line summary
-      description: What does this flow accomplish?
-      placeholder: "Machine-to-machine auth where the app authenticates as itself, no user."
+      label: What should it teach?
+      description: One or two sentences on what the flow accomplishes and what a learner should take away.
+      placeholder: "How a client provisions/updates/deactivates users on a service provider over REST, and how it authenticates."
     validations:
       required: true
   - type: textarea
-    id: actors
+    id: flavor
     attributes:
-      label: Actors
-      description: One per line — label and role (user/browser/client/authServer/resourceServer/system).
-      placeholder: |
-        Client App — client
-        Authorization Server — authServer
-        Resource Server — resourceServer
-    validations:
-      required: true
-  - type: textarea
-    id: steps
-    attributes:
-      label: Ordered steps
-      description: "One message per line — from → to: label. Note any request/response payloads."
-      placeholder: |
-        Client → Authorization Server: POST /token (grant_type=client_credentials, with client_secret)
-        Authorization Server → Client: access_token JSON response
-        Client → Resource Server: GET /api with Bearer token
-        Resource Server → Client: 200 protected data
-    validations:
-      required: true
-  - type: textarea
-    id: params
-    attributes:
-      label: Toggle parameters (optional)
-      description: Any on/off variations to demonstrate (e.g. "mTLS vs client_secret").
+      label: Constraints or flavor (optional)
+      description: Anything specific you want shown — particular messages, toggles, edge cases, security points to emphasize.
+      placeholder: "Show a PATCH update and a filtered GET. Mention Bearer-token auth. Add an mTLS toggle."
     validations:
       required: false
-  - type: textarea
-    id: specs
+  - type: input
+    id: anchor_ref
     attributes:
-      label: Spec / RFC references
-      description: Links to authoritative sources for accuracy.
-      placeholder: "RFC 6749 §4.4 — https://datatracker.ietf.org/doc/html/rfc6749#section-4.4"
+      label: Anchor spec/RFC (optional)
+      description: A canonical source if you have one handy. Leave blank and the agent will find it.
+      placeholder: "RFC 7644"
     validations:
-      required: true
+      required: false
   - type: checkboxes
     id: ack
     attributes:
       label: Acknowledgement
       options:
-        - label: Payloads should be realistic but contain no real secrets.
+        - label: I understand the agent authors the flow; I'll review the PR/preview before merge.
           required: true
