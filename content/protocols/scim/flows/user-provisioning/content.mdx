@@ -1,0 +1,137 @@
+## What problem does this solve?
+
+Single sign-on (SAML, OIDC) answers *"can this person log in right now?"* — but it
+says nothing about **which accounts exist** in each downstream app, what they can
+see, or what happens the day someone is hired, promoted, or fired. Left to humans,
+that "joiner-mover-leaver" lifecycle is slow and error-prone, and the worst failure
+mode is a security one: **orphaned accounts** that keep working long after an
+employee has left.
+
+**SCIM** (System for Cross-domain Identity Management) is the standard that
+automates it. It is deliberately *not* a new handshake — it is a plain
+**REST API over JSON** with a fixed resource model:
+
+- **RFC 7643** defines the *schema* — what a `User` and a `Group` look like, plus
+  common attributes (`id`, `externalId`, `meta`) and the Enterprise User extension.
+- **RFC 7644** defines the *protocol* — the endpoints (`/Users`, `/Groups`,
+  `/ServiceProviderConfig`, …) and the operations on them (POST, GET, PUT, PATCH,
+  DELETE, plus `/Bulk` and `/.search`).
+- **RFC 7642** defines the *concepts and use cases* — the joiner-mover-leaver
+  scenarios this flow walks.
+
+Because the contract is fixed, one IdP can provision into hundreds of apps without
+custom code per app — the whole point of a *cross-domain* standard.
+
+## SCIM is an interface: the two sides
+
+RFC 7642 (§2.2) frames SCIM by the **direction identity data flows**, and RFC 7644
+names the two roles:
+
+- The **SCIM client** is the source of truth that *issues* requests — an IdP like
+  Okta or Microsoft Entra ID, or an HR system like Workday. RFC 7642 calls it the
+  Enterprise Cloud Subscriber (ECS); it **pushes** the lifecycle outward.
+- The **SCIM service provider** is the downstream app that *exposes* the SCIM REST
+  API and persists the result in its own store. RFC 7642 calls it the Cloud Service
+  Provider (CSP).
+
+Everything interesting about a SCIM implementation lives at that boundary: the
+service provider has to **validate** each request against the declared schemas,
+**translate** the standard resource model into whatever its native database looks
+like, enforce **uniqueness**, and mint the canonical `id`. The diagram's third lane,
+the *App Identity Store*, is where that translation lands.
+
+## The resource model (the structure)
+
+Two resource types carry almost everything, and both are just JSON objects that
+declare their `schemas`:
+
+**User** (`urn:ietf:params:scim:schemas:core:2.0:User`, RFC 7643 §4.1) —
+`userName` (required, unique), `name.{givenName,familyName,formatted}`,
+`displayName`, `emails[].{value,type,primary}`, `title`, and `active`. The
+**Enterprise User** extension (`…:extension:enterprise:2.0:User`, §4.3) adds
+`employeeNumber`, `department`, `manager`, etc., as a nested object keyed by its URN.
+
+**Group** (`urn:ietf:params:scim:schemas:core:2.0:Group`, RFC 7643 §4.2) —
+`displayName` and a `members[]` array, where each member references a user by its
+SP-assigned `value` (id), with a resolvable `$ref` and a `display` label.
+
+Three **common attributes** (§3.1) appear on every resource and are central to how
+the two systems stay in sync:
+
+- `id` — the **service provider's** canonical, read-only identifier. The client
+  never chooses it.
+- `externalId` — the **client's** own identifier, stored untouched by the SP. Since
+  there is no shared primary key, the client keeps an `externalId ↔ id` map to
+  correlate its records with the SP's.
+- `meta` — `resourceType`, `created`, `lastModified`, `version` (an ETag), and
+  `location` (the resource's URL).
+
+## Walking the flow
+
+The diagram follows one employee end-to-end:
+
+1. **GET /ServiceProviderConfig** — discovery first. The client learns whether
+   `patch` and `filter` are supported and the max page size, so it can adapt instead
+   of assuming (RFC 7644 §4 / RFC 7643 §5).
+2. **POST /Users (joiner)** — a new hire is created. The body carries the core User
+   plus the enterprise extension and the client's `externalId`. Behind the interface
+   the SP validates, enforces `userName` uniqueness (a clash is the **409
+   uniqueness** error), persists, and returns **201 Created** with the new `id`, a
+   `Location` header, and `meta`.
+3. **`PATCH /Groups/{id}` — add member** — the user joins a group. A targeted
+   `add` to the multi-valued `members` attribute beats a whole-resource PUT, which
+   could drop members added concurrently. The `Group.members` side is authoritative;
+   the matching `User.groups` is read-only.
+4. **`PATCH /Users/{id}` (mover)** — a role change sends only the changed attributes.
+   Note that an extension attribute is addressed by its **full URN-qualified path**
+   (`urn:…:enterprise:2.0:User:department`) while core attributes use the short name
+   (RFC 7644 §3.10). An `If-Match` header gives optimistic concurrency.
+5. **GET /Users?filter=…** — reconciliation. SCIM's filter grammar (`eq`, `co`,
+   `sw`, `pr`, …) finds resources without guessing ids, and `attributes` trims the
+   response. Results come back wrapped in a **ListResponse** envelope with
+   `totalResults` and pagination — never a bare array.
+6. **PATCH active=false (leaver)** — the recommended off-boarding. The account is
+   disabled, not destroyed; it stays auditable and can be re-enabled. Toggle the
+   **Hard delete** parameter to see the destructive **`DELETE /Users/{id}`**
+   alternative (RFC 7644 §3.6), which erases the resource and breaks the
+   `externalId ↔ id` mapping.
+
+## A real-world example
+
+This is exactly what happens when an admin connects, say, **Okta or Microsoft Entra
+ID** to a SaaS app like Slack, Zoom, or GitHub. The admin pastes the app's **SCIM
+base URL** (`/scim/v2`) and a **bearer token** into the IdP. From then on:
+
+- An employee added to the right group in the IdP triggers a **POST /Users** and a
+  **PATCH /Groups** into the app — the account simply appears, already in the right
+  team.
+- An attribute change in the directory flows out as a **`PATCH /Users/{id}`**.
+- Deprovisioning on termination flips **`active` to `false`**, instantly cutting off
+  access across every connected app — the single biggest security win of automated
+  provisioning over manual cleanup.
+
+## Security notes
+
+- **Authentication is layered on, not built in.** RFC 7644 §2 says to reuse HTTP
+  authentication; in practice that means an **OAuth 2.0 bearer token over TLS**. That
+  token is a powerful credential — it can read and write every identity in the app —
+  so it must be secret, scoped, and rotatable. SCIM endpoints must be TLS-only.
+- **Prefer deactivation (`active=false`) over DELETE** for off-boarding. It is
+  reversible, preserves audit history, and keeps the `externalId ↔ id` mapping intact.
+- **Use PATCH, not PUT, for incremental change.** PUT replaces the whole resource and
+  can silently clear attributes the client didn't send, or drop group members added
+  by another actor between read and write.
+- **Honor read-only and returned:"never" attributes.** The SP must ignore
+  client-supplied `id`/`meta` and never return secrets like passwords, even when
+  asked via `attributes` (RFC 7643 §7, RFC 7644 §3.4.2.5).
+- **Use ETags / `If-Match` for concurrency** when multiple clients can write, to avoid
+  lost updates (RFC 7644 §3.14).
+- **Filtering is optional and can be abused.** A service provider caps results
+  (`filter.maxResults`) and returns `400` with `tooMany`/`invalidFilter` for
+  expensive or malformed queries (RFC 7644 §3.4.2).
+
+## Further reading
+
+- [RFC 7644 — SCIM Protocol](https://datatracker.ietf.org/doc/html/rfc7644) (operations, endpoints, PATCH, filtering, errors)
+- [RFC 7643 — SCIM Core Schema](https://datatracker.ietf.org/doc/html/rfc7643) (User, Group, common attributes, Enterprise extension)
+- [RFC 7642 — SCIM Definitions, Overview, Concepts, and Requirements](https://datatracker.ietf.org/doc/html/rfc7642) (actors and joiner-mover-leaver use cases)
