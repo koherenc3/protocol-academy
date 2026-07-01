@@ -6,26 +6,26 @@ export function ProtocolCard({ protocol }: { protocol: Protocol }) {
   return (
     <Link
       href={`/${protocol.id}/`}
-      className="group block rounded-xl border border-slate-700/60 bg-slate-900/40 p-5 transition-colors hover:border-amber-400/60 hover:bg-slate-900/70"
+      className="term-panel term-bracket group block p-5 transition-colors hover:border-term-green/70 hover:shadow-glow"
     >
       <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-lg font-semibold text-slate-100 group-hover:text-amber-200">
+        <h3 className="font-display text-xl tracking-wide text-term-fg group-hover:text-term-green">
           {protocol.name}
         </h3>
         {/* Card sits under its category header, so show the finer sub-type here
             (fall back to category if a protocol hasn't set one). */}
-        <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">
+        <span className="shrink-0 border border-term-border px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-term-dim">
           {protocol.subtype ?? protocol.category}
         </span>
       </div>
-      <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
+      <p className="mt-1.5 text-sm leading-relaxed text-term-fg/70">
         {protocol.summary}
       </p>
       <div className="mt-3 flex flex-wrap gap-1.5">
         {protocol.flows.map((f) => (
           <span
             key={f.id}
-            className="rounded-full border border-slate-700 px-2 py-0.5 text-xs text-slate-300"
+            className="border border-term-border px-2 py-0.5 text-xs text-term-cyan/90"
           >
             {f.title}
           </span>

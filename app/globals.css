@@ -7,14 +7,115 @@
 }
 
 body {
-  @apply bg-slate-950 text-slate-200 antialiased;
+  @apply bg-term-bg text-term-fg antialiased;
+  font-feature-settings: "liga" 0;
+}
+
+::selection {
+  background: rgba(57, 255, 136, 0.3);
+  color: #eafff4;
+}
+
+/* Thin, terminal-flavored scrollbar. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: theme("colors.term.bg");
+}
+::-webkit-scrollbar-thumb {
+  background: theme("colors.term.border-bright");
+  border: 2px solid theme("colors.term.bg");
+}
+::-webkit-scrollbar-thumb:hover {
+  background: theme("colors.term.green-dim");
+}
+
+/* Fixed scanline + vignette overlay, applied once in the root layout.
+   Pointer-events disabled so it never intercepts clicks. */
+.crt-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background-image: theme("backgroundImage.scanlines");
+  mix-blend-mode: overlay;
+  opacity: 0.5;
+}
+
+.crt-vignette {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+/* Reusable terminal-window chrome for cards / panels site-wide. */
+.term-panel {
+  @apply border border-term-border bg-term-panel;
+  position: relative;
+}
+
+.term-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid transparent;
+  pointer-events: none;
+  transition: border-color 150ms ease;
+}
+
+.term-bracket {
+  position: relative;
+}
+
+.term-bracket::before,
+.term-bracket::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: theme("colors.term.green");
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.term-bracket::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.term-bracket::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+.term-bracket:hover::before,
+.term-bracket:hover::after,
+.term-bracket:focus-visible::before,
+.term-bracket:focus-visible::after {
+  opacity: 1;
+}
+
+.text-glow {
+  text-shadow: 0 0 12px currentColor;
 }
 
 /* Tailwind Typography tuning for MDX prose on the dark theme. */
 .prose-flow {
   @apply prose prose-invert max-w-none prose-headings:scroll-mt-20
-    prose-h2:text-xl prose-h2:font-semibold prose-h2:text-slate-100
-    prose-h3:text-base prose-h3:text-slate-200
-    prose-a:text-amber-300 prose-code:text-amber-200
+    prose-h2:text-xl prose-h2:font-semibold prose-h2:text-term-fg
+    prose-h3:text-base prose-h3:text-term-fg
+    prose-a:text-term-amber prose-code:text-term-amber
     prose-code:before:content-none prose-code:after:content-none;
 }

@@ -132,6 +132,20 @@ and reduce false positives:
 - Label each step's `channel` correctly (front = via browser, direct = back
   channel).
 
+## Site-wide design tokens
+
+The global chrome (nav, footer, homepage) uses a terminal/hacker aesthetic:
+monospace type (`font-mono`, JetBrains Mono) plus a display face for headings
+(`font-display`, VT323), and a `term` color scale defined in
+`tailwind.config.ts` (`term.bg`, `term.panel`, `term.border`, `term.fg`,
+`term.dim`, `term.green`, `term.amber`, `term.cyan`, `term.magenta`,
+`term.red`). Reusable chrome classes live in `app/globals.css`: `.term-panel`
+(bordered panel), `.term-bracket` (corner-bracket hover accent), `.text-glow`
+(text-shadow glow). Prefer these `term-*` tokens over the default Tailwind
+`slate`/`amber` palette for any new site-wide UI so the look stays consistent.
+The `actor` color scale (used by flow diagrams/payload viewers) is a separate,
+unrelated token set — don't conflate the two.
+
 ## What NOT to touch
 
 You should not need to edit `lib/`, `components/`, `app/`, or `scripts/` to add a
