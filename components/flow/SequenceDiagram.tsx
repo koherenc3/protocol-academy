@@ -32,7 +32,7 @@ export function SequenceDiagram({ actors, steps, activeIndex, onSelect }: Props)
   ).filter((c) => c !== "internal") as Channel[];
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto font-mono">
       <div className="min-w-[600px]">
         {/* Actor headers */}
         <div
@@ -42,7 +42,7 @@ export function SequenceDiagram({ actors, steps, activeIndex, onSelect }: Props)
           {actors.map((a) => (
             <div key={a.id} className="text-center">
               <div
-                className="mx-auto inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-semibold"
+                className="mx-auto inline-flex items-center gap-1.5 rounded-md border bg-slate-950/60 px-2.5 py-1.5 text-xs font-semibold"
                 style={{ borderColor: ROLE_COLORS[a.role], color: ROLE_COLORS[a.role] }}
                 title={a.description}
               >
@@ -83,11 +83,11 @@ export function SequenceDiagram({ actors, steps, activeIndex, onSelect }: Props)
 
         {/* Channel legend */}
         {usedChannels.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-4 border-t border-slate-800 pt-2 text-[11px] text-slate-400">
+          <div className="mt-3 flex flex-wrap gap-4 border-t border-slate-800 pt-2 text-[11px] text-slate-500">
             {usedChannels.map((c) => (
               <span key={c} className="flex items-center gap-1.5">
                 <span
-                  className="inline-block h-2.5 w-4 rounded-full"
+                  className="inline-block h-2.5 w-4 rounded-sm"
                   style={{ backgroundColor: CHANNEL_COLORS[c] }}
                 />
                 {CHANNEL_LABELS[c]}
@@ -125,13 +125,13 @@ function MessageRow({
 
   const badge = (
     <span
-      className={`absolute left-1 top-1/2 z-20 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-[10px] font-bold transition-colors ${
+      className={`absolute left-1 top-1/2 z-20 flex h-5 min-w-[1.25rem] -translate-y-1/2 items-center justify-center rounded-sm px-0.5 text-[10px] font-bold transition-colors ${
         active
           ? "bg-amber-400 text-slate-900"
-          : "bg-slate-700 text-slate-200 group-hover:bg-slate-600"
+          : "bg-slate-800 text-emerald-400 group-hover:bg-slate-700"
       }`}
     >
-      {index + 1}
+      {String(index + 1).padStart(2, "0")}
     </span>
   );
 
@@ -148,18 +148,18 @@ function MessageRow({
         >
           {badge}
           <motion.span
-            className="absolute top-1/2 z-10 flex h-6 items-center rounded-full border px-2 text-[11px]"
+            className="absolute top-1/2 z-10 flex h-6 items-center rounded-sm border px-2 text-[11px]"
             style={{ left: `${left}%`, marginTop: -12, borderColor: lineColor, color: lineColor }}
             animate={active ? { scale: [1, 1.12, 1] } : { scale: 1 }}
             transition={active ? { duration: 1.1, repeat: Infinity } : { duration: 0.2 }}
           >
-            ↻ internal
+            ↻ local()
           </motion.span>
           <span
             className={`absolute top-1/2 z-10 -translate-y-1/2 pl-2 text-[11px] ${
               active ? "font-semibold text-amber-200" : "text-slate-300"
             }`}
-            style={{ left: `calc(${left}% + 70px)` }}
+            style={{ left: `calc(${left}% + 88px)` }}
           >
             {step.label}
           </span>

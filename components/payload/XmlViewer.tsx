@@ -1,6 +1,7 @@
 import type { XmlPayload } from "@/lib/types";
 import { formatXml, type XmlLine } from "@/lib/xml";
 import { Annotations } from "./Annotations";
+import { TerminalFrame } from "./TerminalFrame";
 
 const ATTR_RE = /([\w:.-]+)\s*=\s*"([^"]*)"|([\w:.-]+)\s*=\s*'([^']*)'/g;
 
@@ -78,11 +79,13 @@ export function XmlViewer({ payload }: { payload: XmlPayload }) {
   const lines = formatXml(payload.xml);
   return (
     <div>
-      <div className="overflow-x-auto rounded-md border border-slate-700/60 bg-slate-950 p-3 font-mono text-xs leading-relaxed">
-        {lines.map((line, i) => (
-          <Line key={i} line={line} />
-        ))}
-      </div>
+      <TerminalFrame title="assertion.xml">
+        <div className="overflow-x-auto font-mono text-xs leading-relaxed">
+          {lines.map((line, i) => (
+            <Line key={i} line={line} />
+          ))}
+        </div>
+      </TerminalFrame>
       <Annotations items={payload.annotations} />
     </div>
   );

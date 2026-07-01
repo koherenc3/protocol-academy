@@ -16,8 +16,8 @@ const TopologyDiagram = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="grid h-[440px] place-items-center text-sm text-slate-500">
-        Loading topology…
+      <div className="grid h-[440px] place-items-center font-mono text-sm text-slate-500">
+        <span className="animate-pulse">$ loading topology…</span>
       </div>
     ),
   },
@@ -114,7 +114,7 @@ export function FlowViewer({ flow }: { flow: Flow }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* View toggle: Sequence ("when") ⇄ Topology ("where") */}
           {hasTopology ? (
-            <div className="inline-flex rounded-md border border-slate-700 p-0.5 text-sm">
+            <div className="inline-flex rounded-md border border-slate-700 p-0.5 font-mono text-sm">
               {(["sequence", "topology"] as ViewMode[]).map((mode) => (
                 <button
                   key={mode}
@@ -123,11 +123,11 @@ export function FlowViewer({ flow }: { flow: Flow }) {
                   aria-pressed={view === mode}
                   className={`rounded px-3 py-1 font-medium transition-colors ${
                     view === mode
-                      ? "bg-amber-400 text-slate-900"
+                      ? "bg-emerald-400 text-slate-900"
                       : "text-slate-300 hover:bg-slate-700/40"
                   }`}
                 >
-                  {mode === "sequence" ? "Sequence" : "Topology"}
+                  {mode === "sequence" ? "--sequence" : "--topology"}
                 </button>
               ))}
             </div>
@@ -140,42 +140,54 @@ export function FlowViewer({ flow }: { flow: Flow }) {
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-700/60 bg-slate-900/20 p-4">
-        {showTopology ? (
-          <TopologyDiagram
-            actors={flow.actors}
-            steps={visibleSteps}
-            activeIndex={activeIndex}
-            onSelect={select}
-          />
-        ) : (
-          <SequenceDiagram
-            actors={flow.actors}
-            steps={visibleSteps}
-            activeIndex={activeIndex}
-            onSelect={select}
-          />
-        )}
+      <div className="overflow-hidden rounded-lg border border-slate-700/60 bg-slate-900/20">
+        <div className="flex items-center gap-2 border-b border-slate-800 bg-slate-900/80 px-3 py-1.5">
+          <span className="flex gap-1.5" aria-hidden>
+            <span className="h-2.5 w-2.5 rounded-full bg-rose-500/60" />
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-400/60" />
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/60" />
+          </span>
+          <span className="truncate font-mono text-[11px] text-slate-500">
+            {flow.protocolId}/{flow.id} — {showTopology ? "topology" : "sequence"}.diagram
+          </span>
+        </div>
+        <div className="p-4">
+          {showTopology ? (
+            <TopologyDiagram
+              actors={flow.actors}
+              steps={visibleSteps}
+              activeIndex={activeIndex}
+              onSelect={select}
+            />
+          ) : (
+            <SequenceDiagram
+              actors={flow.actors}
+              steps={visibleSteps}
+              activeIndex={activeIndex}
+              onSelect={select}
+            />
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 font-mono text-sm">
         <button
           type="button"
           onClick={() => go(-1)}
           disabled={activeIndex === 0}
-          className="rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 enabled:hover:bg-slate-700/40 disabled:opacity-40"
+          className="rounded-md border border-slate-700 px-3 py-1.5 font-medium text-slate-200 enabled:hover:border-emerald-500/60 enabled:hover:bg-slate-700/40 disabled:opacity-40"
         >
-          ← Prev
+          [ ← prev ]
         </button>
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={togglePlay}
-            className="rounded-md border border-amber-400/50 px-3 py-1.5 text-sm font-medium text-amber-300 hover:bg-amber-400/10"
+            className="rounded-md border border-emerald-400/50 px-3 py-1.5 font-medium text-emerald-300 hover:bg-emerald-400/10"
           >
-            {isPlaying ? "⏸ Pause" : "▶ Play"}
+            {isPlaying ? "[ ⏸ pause ]" : "[ ▶ run ]"}
           </button>
-          <span className="hidden text-xs text-slate-400 sm:inline">
+          <span className="hidden text-xs text-slate-500 sm:inline">
             ← / → or click a message
           </span>
         </div>
@@ -183,9 +195,9 @@ export function FlowViewer({ flow }: { flow: Flow }) {
           type="button"
           onClick={() => go(1)}
           disabled={activeIndex >= visibleSteps.length - 1}
-          className="rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 enabled:hover:bg-slate-700/40 disabled:opacity-40"
+          className="rounded-md border border-slate-700 px-3 py-1.5 font-medium text-slate-200 enabled:hover:border-emerald-500/60 enabled:hover:bg-slate-700/40 disabled:opacity-40"
         >
-          Next →
+          [ next → ]
         </button>
       </div>
 

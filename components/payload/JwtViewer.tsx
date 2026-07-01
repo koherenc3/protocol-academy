@@ -1,6 +1,7 @@
 import type { JwtPayload } from "@/lib/types";
 import { decodeJwt, describeClaim } from "@/lib/jwt";
 import { Annotations } from "./Annotations";
+import { TerminalFrame } from "./TerminalFrame";
 
 const SEGMENT_COLORS = ["text-rose-400", "text-violet-400", "text-sky-400"];
 
@@ -16,14 +17,16 @@ export function JwtViewer({ payload }: { payload: JwtPayload }) {
   return (
     <div>
       {/* Color-coded compact token */}
-      <div className="overflow-x-auto rounded-md border border-slate-700/60 bg-slate-950 p-3 font-mono text-xs leading-relaxed break-all">
-        {segments.map((seg, i) => (
-          <span key={i}>
-            <span className={SEGMENT_COLORS[i]}>{seg}</span>
-            {i < 2 && <span className="text-slate-500">.</span>}
-          </span>
-        ))}
-      </div>
+      <TerminalFrame title="jwt.decode()">
+        <div className="overflow-x-auto font-mono text-xs leading-relaxed break-all">
+          {segments.map((seg, i) => (
+            <span key={i}>
+              <span className={SEGMENT_COLORS[i]}>{seg}</span>
+              {i < 2 && <span className="text-slate-500">.</span>}
+            </span>
+          ))}
+        </div>
+      </TerminalFrame>
 
       {decoded.error && (
         <p className="mt-2 text-xs text-rose-400">⚠ {decoded.error}</p>
@@ -55,7 +58,10 @@ function DecodedBlock({
 }) {
   return (
     <div className="rounded-md border border-slate-700/60 bg-slate-900/40 p-3">
-      <div className={`mb-1 text-xs font-semibold ${color}`}>{title}</div>
+      <div className={`mb-1 font-mono text-xs font-semibold ${color}`}>
+        {"// "}
+        {title}
+      </div>
       {obj ? (
         <ul className="space-y-0.5 font-mono text-xs">
           {Object.entries(obj).map(([k, v]) => {

@@ -1,5 +1,6 @@
 import type { HttpPayload } from "@/lib/types";
 import { Annotations } from "./Annotations";
+import { TerminalFrame } from "./TerminalFrame";
 
 const REDIRECT_CODES = new Set(["302", "303"]);
 
@@ -12,29 +13,32 @@ export function HttpViewer({ payload }: { payload: HttpPayload }) {
   const isRedirect = REDIRECT_CODES.has(payload.method);
   return (
     <div className="space-y-3 font-mono text-xs">
-      <div className="overflow-x-auto rounded-md border border-slate-700/60 bg-slate-950 p-3">
+      <TerminalFrame title="request">
+        <span className="text-slate-600">$ </span>
         <span
           className={`font-semibold ${isRedirect ? "text-amber-300" : "text-emerald-400"}`}
         >
           {isRedirect ? `${payload.method} Redirect →` : payload.method}
         </span>{" "}
         <span className="break-all text-slate-200">{payload.url}</span>
-      </div>
+      </TerminalFrame>
 
       {payload.query && Object.keys(payload.query).length > 0 && (
-        <KeyValueTable title="Query parameters" data={payload.query} highlightKeys />
+        <KeyValueTable title="// query parameters" data={payload.query} highlightKeys />
       )}
       {payload.headers && Object.keys(payload.headers).length > 0 && (
-        <KeyValueTable title="Headers" data={payload.headers} />
+        <KeyValueTable title="// headers" data={payload.headers} />
       )}
       {payload.body && (
         <div>
-          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            Body
+          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            {"// body"}
           </div>
-          <pre className="overflow-x-auto rounded-md border border-slate-700/60 bg-slate-950 p-3 text-slate-200 whitespace-pre-wrap break-all">
-            {payload.body}
-          </pre>
+          <TerminalFrame>
+            <pre className="whitespace-pre-wrap break-all text-slate-200">
+              {payload.body}
+            </pre>
+          </TerminalFrame>
         </div>
       )}
 
@@ -54,11 +58,11 @@ function KeyValueTable({
 }) {
   return (
     <div>
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
         {title}
       </div>
       <div className="overflow-hidden rounded-md border border-slate-700/60">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse font-mono">
           <tbody>
             {Object.entries(data).map(([k, v], i) => (
               <tr

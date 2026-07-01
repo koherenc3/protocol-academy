@@ -20,7 +20,7 @@ export function ActorNode({ data }: NodeProps & { data: ActorNodeData }) {
   const color = ROLE_COLORS[data.role];
   return (
     <div
-      className="flex items-center gap-2 rounded-lg border-2 bg-slate-900 px-3 py-2 text-xs font-semibold transition-shadow"
+      className="flex items-center gap-2 rounded-sm border-2 bg-slate-900 px-3 py-2 font-mono text-xs font-semibold transition-shadow"
       style={{
         borderColor: color,
         color,

@@ -11,9 +11,10 @@ export function Annotations({ items }: { items?: AnnotationItem[] }) {
       {items.map((a, i) => (
         <div
           key={i}
-          className="rounded-md border border-slate-700/60 bg-slate-900/40 p-2"
+          className="rounded-md border border-slate-700/60 border-l-2 border-l-emerald-500/60 bg-slate-900/40 p-2"
         >
           <dt className="font-mono text-xs font-semibold text-amber-300">
+            <span className="text-slate-600">{"// "}</span>
             {a.target}
           </dt>
           <dd className="mt-0.5 text-slate-300">{a.note}</dd>
