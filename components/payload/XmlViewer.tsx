@@ -23,17 +23,17 @@ function Tag({ raw }: { raw: string }) {
 
   return (
     <span>
-      <span className="text-slate-500">{isClose ? "</" : "<"}</span>
-      <span className="text-sky-300">{name}</span>
+      <span className="text-term-dim">{isClose ? "</" : "<"}</span>
+      <span className="text-term-cyan">{name}</span>
       {attrs.map((a, i) => (
         <span key={i}>
           {" "}
-          <span className="text-amber-300">{a.n}</span>
-          <span className="text-slate-500">=</span>
-          <span className="text-emerald-300">{`"${a.v}"`}</span>
+          <span className="text-term-amber">{a.n}</span>
+          <span className="text-term-dim">=</span>
+          <span className="text-term-green">{`"${a.v}"`}</span>
         </span>
       ))}
-      <span className="text-slate-500">{selfClose ? " />" : ">"}</span>
+      <span className="text-term-dim">{selfClose ? " />" : ">"}</span>
     </span>
   );
 }
@@ -51,19 +51,19 @@ function Line({ line }: { line: XmlLine }) {
       );
     case "comment":
       return (
-        <div style={style} className="break-all italic text-slate-500">
+        <div style={style} className="break-all italic text-term-dim">
           {line.raw}
         </div>
       );
     case "decl":
       return (
-        <div style={style} className="break-all text-slate-500">
+        <div style={style} className="break-all text-term-dim">
           {line.raw}
         </div>
       );
     default: // text / cdata
       return (
-        <div style={style} className="break-all text-slate-200">
+        <div style={style} className="break-all text-term-fg">
           {line.raw}
         </div>
       );

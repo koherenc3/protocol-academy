@@ -11,13 +11,13 @@ export function Annotations({ items }: { items?: AnnotationItem[] }) {
       {items.map((a, i) => (
         <div
           key={i}
-          className="rounded-md border border-slate-700/60 border-l-2 border-l-emerald-500/60 bg-slate-900/40 p-2"
+          className="rounded-md border border-term-border border-l-2 border-l-term-green/60 bg-term-panel/40 p-2"
         >
-          <dt className="font-mono text-xs font-semibold text-amber-300">
-            <span className="text-slate-600">{"// "}</span>
+          <dt className="font-mono text-xs font-semibold text-term-amber">
+            <span className="text-term-dim">{"// "}</span>
             {a.target}
           </dt>
-          <dd className="mt-0.5 text-slate-300">{a.note}</dd>
+          <dd className="mt-0.5 text-term-fg/80">{a.note}</dd>
         </div>
       ))}
     </dl>

@@ -33,24 +33,24 @@ export default async function FlowPage({
 
   return (
     <div>
-      <nav className="mb-4 font-mono text-xs text-slate-500">
-        <span className="text-emerald-500">~</span>{" "}
-        <Link href="/" className="hover:text-emerald-300">
+      <nav className="mb-4 font-mono text-xs text-term-dim">
+        <span className="text-term-green">~</span>{" "}
+        <Link href="/" className="hover:text-term-green">
           home
         </Link>{" "}
-        <span className="text-slate-700">/</span>{" "}
-        <Link href={`/${p.id}/`} className="hover:text-emerald-300">
+        <span className="text-term-border-bright">/</span>{" "}
+        <Link href={`/${p.id}/`} className="hover:text-term-green">
           {p.id}
         </Link>{" "}
-        <span className="text-slate-700">/</span>{" "}
-        <span className="text-slate-300">{f.id}</span>
+        <span className="text-term-border-bright">/</span>{" "}
+        <span className="text-term-fg">{f.id}</span>
       </nav>
 
       <header className="mb-6">
-        <h1 className="font-mono text-2xl font-bold text-slate-100">
-          <span className="text-emerald-500">#</span> {f.title}
+        <h1 className="font-mono text-2xl font-bold text-term-fg">
+          <span className="text-term-green">#</span> {f.title}
         </h1>
-        <p className="mt-2 max-w-2xl text-slate-400">{f.summary}</p>
+        <p className="mt-2 max-w-2xl text-term-dim">{f.summary}</p>
         {f.specRefs && f.specRefs.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
             {f.specRefs.map((ref) => (
@@ -59,7 +59,7 @@ export default async function FlowPage({
                 href={ref.url}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-sm border border-slate-700 px-2.5 py-0.5 font-mono text-xs text-slate-400 hover:border-emerald-400/60 hover:text-emerald-300"
+                className="rounded-sm border border-term-border px-2.5 py-0.5 font-mono text-xs text-term-dim hover:border-term-green/60 hover:text-term-green"
               >
                 man {ref.label} ↗
               </a>
@@ -71,7 +71,7 @@ export default async function FlowPage({
       <FlowViewer flow={f} />
 
       {Body && (
-        <article className="prose-flow mt-10 border-t border-slate-800 pt-8">
+        <article className="prose-flow mt-10 border-t border-term-border pt-8">
           <Body />
         </article>
       )}

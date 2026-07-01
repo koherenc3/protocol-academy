@@ -16,7 +16,7 @@ export function ParamToggles({ params, state, onToggle }: Props) {
         return (
           <label
             key={p.id}
-            className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-700/60 bg-slate-900/40 px-3 py-1.5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-emerald-400/60"
+            className="flex cursor-pointer items-center gap-2 rounded-md border border-term-border bg-term-panel/40 px-3 py-1.5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-term-green/60"
             title={p.description}
           >
             <input
@@ -27,11 +27,11 @@ export function ParamToggles({ params, state, onToggle }: Props) {
             />
             <span
               aria-hidden
-              className={on ? "text-emerald-400" : "text-slate-600"}
+              className={on ? "text-term-green" : "text-term-dim"}
             >
               [{on ? "x" : " "}]
             </span>
-            <span className={on ? "text-slate-100" : "text-slate-500"}>
+            <span className={on ? "text-term-fg" : "text-term-dim"}>
               {p.label}
             </span>
           </label>

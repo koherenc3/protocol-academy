@@ -143,8 +143,15 @@ monospace type (`font-mono`, JetBrains Mono) plus a display face for headings
 (bordered panel), `.term-bracket` (corner-bracket hover accent), `.text-glow`
 (text-shadow glow). Prefer these `term-*` tokens over the default Tailwind
 `slate`/`amber` palette for any new site-wide UI so the look stays consistent.
-The `actor` color scale (used by flow diagrams/payload viewers) is a separate,
-unrelated token set — don't conflate the two.
+`components/flow/*`, `components/payload/*`, `mdx-components.tsx`, and the
+`app/[protocol]/**` pages all use `term-*` for chrome (backgrounds, borders,
+body text) too — there's a single dark terminal skin across the whole site,
+not one palette for global chrome and another for protocol/flow pages.
+The `actor` color scale (`ActorRole` → hex, mirrored in `roleColors.ts`'s
+`ROLE_COLORS`) and the `channel` colors (`channels.ts`'s `CHANNEL_COLORS`) are
+separate, intentional token sets for diagram semantics (which actor, which
+transport channel) — don't fold those into `term-*` or treat them as a
+leftover mismatched palette.
 
 ## What NOT to touch
 

@@ -28,41 +28,41 @@ export default async function ProtocolPage({
 
   return (
     <div>
-      <nav className="mb-4 font-mono text-xs text-slate-500">
-        <span className="text-emerald-500">~</span>{" "}
-        <Link href="/" className="hover:text-emerald-300">
+      <nav className="mb-4 font-mono text-xs text-term-dim">
+        <span className="text-term-green">~</span>{" "}
+        <Link href="/" className="hover:text-term-green">
           home
         </Link>{" "}
-        <span className="text-slate-700">/</span>{" "}
-        <span className="text-slate-300">{p.id}</span>
+        <span className="text-term-border-bright">/</span>{" "}
+        <span className="text-term-fg">{p.id}</span>
       </nav>
 
       <header className="mb-8">
-        <span className="rounded-sm border border-slate-700 bg-slate-900 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-emerald-400">
+        <span className="rounded-sm border border-term-border bg-term-panel px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-term-green">
           {p.category}
         </span>
-        <h1 className="mt-2 font-mono text-3xl font-bold text-slate-100">
-          <span className="text-emerald-500">#</span> {p.name}
+        <h1 className="mt-2 font-mono text-3xl font-bold text-term-fg">
+          <span className="text-term-green">#</span> {p.name}
         </h1>
-        <p className="mt-2 max-w-2xl text-slate-400">{p.summary}</p>
+        <p className="mt-2 max-w-2xl text-term-dim">{p.summary}</p>
       </header>
 
-      <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-wide text-slate-500">
-        <span className="text-emerald-500">$</span> ls ./flows
+      <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-wide text-term-dim">
+        <span className="text-term-green">$</span> ls ./flows
       </h2>
       <ul className="grid gap-3 sm:grid-cols-2">
         {p.flows.map((f) => (
           <li key={f.id}>
             <Link
               href={`/${p.id}/${f.id}/`}
-              className="group block h-full rounded-lg border border-slate-700/60 bg-slate-900/40 p-4 transition-colors hover:border-emerald-400/60 hover:bg-slate-900/70"
+              className="group block h-full rounded-lg border border-term-border bg-term-panel/40 p-4 transition-colors hover:border-term-green/60 hover:bg-term-panel/70"
             >
-              <h3 className="font-mono font-semibold text-slate-100 group-hover:text-emerald-300">
-                <span className="text-slate-600">{"> "}</span>
+              <h3 className="font-mono font-semibold text-term-fg group-hover:text-term-green">
+                <span className="text-term-dim">{"> "}</span>
                 {f.title}
               </h3>
-              <p className="mt-1 text-sm text-slate-400">{f.summary}</p>
-              <span className="mt-2 inline-block font-mono text-xs text-slate-600 group-hover:text-emerald-400/80">
+              <p className="mt-1 text-sm text-term-dim">{f.summary}</p>
+              <span className="mt-2 inline-block font-mono text-xs text-term-dim group-hover:text-term-green/80">
                 [{f.steps.length} steps] →
               </span>
             </Link>

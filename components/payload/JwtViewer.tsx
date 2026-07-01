@@ -3,7 +3,7 @@ import { decodeJwt, describeClaim } from "@/lib/jwt";
 import { Annotations } from "./Annotations";
 import { TerminalFrame } from "./TerminalFrame";
 
-const SEGMENT_COLORS = ["text-rose-400", "text-violet-400", "text-sky-400"];
+const SEGMENT_COLORS = ["text-term-red", "text-term-magenta", "text-term-cyan"];
 
 /**
  * Decodes a JWT client-side and shows the three color-coded segments
@@ -22,14 +22,14 @@ export function JwtViewer({ payload }: { payload: JwtPayload }) {
           {segments.map((seg, i) => (
             <span key={i}>
               <span className={SEGMENT_COLORS[i]}>{seg}</span>
-              {i < 2 && <span className="text-slate-500">.</span>}
+              {i < 2 && <span className="text-term-dim">.</span>}
             </span>
           ))}
         </div>
       </TerminalFrame>
 
       {decoded.error && (
-        <p className="mt-2 text-xs text-rose-400">⚠ {decoded.error}</p>
+        <p className="mt-2 text-xs text-term-red">⚠ {decoded.error}</p>
       )}
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -37,7 +37,7 @@ export function JwtViewer({ payload }: { payload: JwtPayload }) {
         <DecodedBlock title="Payload (claims)" color={SEGMENT_COLORS[1]} obj={decoded.payload} />
       </div>
 
-      <p className="mt-2 font-mono text-[11px] text-slate-500">
+      <p className="mt-2 font-mono text-[11px] text-term-dim">
         <span className={SEGMENT_COLORS[2]}>signature</span> — verified by the
         recipient using the issuer&apos;s key (not decoded here).
       </p>
@@ -57,7 +57,7 @@ function DecodedBlock({
   obj: Record<string, unknown> | null;
 }) {
   return (
-    <div className="rounded-md border border-slate-700/60 bg-slate-900/40 p-3">
+    <div className="rounded-md border border-term-border bg-term-panel/40 p-3">
       <div className={`mb-1 font-mono text-xs font-semibold ${color}`}>
         {"// "}
         {title}
@@ -68,18 +68,18 @@ function DecodedBlock({
             const human = describeClaim(k, v);
             return (
               <li key={k} className="break-all">
-                <span className="text-slate-400">{k}</span>
-                <span className="text-slate-600">: </span>
-                <span className="text-slate-200">{JSON.stringify(v)}</span>
+                <span className="text-term-dim">{k}</span>
+                <span className="text-term-dim">: </span>
+                <span className="text-term-fg">{JSON.stringify(v)}</span>
                 {human && (
-                  <span className="ml-1 text-emerald-400">{`// ${human}`}</span>
+                  <span className="ml-1 text-term-green">{`// ${human}`}</span>
                 )}
               </li>
             );
           })}
         </ul>
       ) : (
-        <p className="text-xs text-slate-500">—</p>
+        <p className="text-xs text-term-dim">—</p>
       )}
     </div>
   );

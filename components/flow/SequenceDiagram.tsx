@@ -13,7 +13,7 @@ interface Props {
   onSelect: (index: number) => void;
 }
 
-const ACTIVE = "#fbbf24"; // amber emphasis for the selected step
+const ACTIVE = "#ffb32c"; // term.amber emphasis for the selected step
 
 /**
  * Animated sequence diagram. Vertical lifelines per actor; one arrowed message
@@ -42,7 +42,7 @@ export function SequenceDiagram({ actors, steps, activeIndex, onSelect }: Props)
           {actors.map((a) => (
             <div key={a.id} className="text-center">
               <div
-                className="mx-auto inline-flex items-center gap-1.5 rounded-md border bg-slate-950/60 px-2.5 py-1.5 text-xs font-semibold"
+                className="mx-auto inline-flex items-center gap-1.5 rounded-md border bg-term-bg/60 px-2.5 py-1.5 text-xs font-semibold"
                 style={{ borderColor: ROLE_COLORS[a.role], color: ROLE_COLORS[a.role] }}
                 title={a.description}
               >
@@ -59,7 +59,7 @@ export function SequenceDiagram({ actors, steps, activeIndex, onSelect }: Props)
             {actors.map((a) => (
               <div
                 key={a.id}
-                className="absolute top-0 bottom-0 w-px bg-slate-700/60"
+                className="absolute top-0 bottom-0 w-px bg-term-border/60"
                 style={{ left: `${centerOf(a.id)}%` }}
               />
             ))}
@@ -83,7 +83,7 @@ export function SequenceDiagram({ actors, steps, activeIndex, onSelect }: Props)
 
         {/* Channel legend */}
         {usedChannels.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-4 border-t border-slate-800 pt-2 text-[11px] text-slate-500">
+          <div className="mt-3 flex flex-wrap gap-4 border-t border-term-border pt-2 text-[11px] text-term-dim">
             {usedChannels.map((c) => (
               <span key={c} className="flex items-center gap-1.5">
                 <span
@@ -127,8 +127,8 @@ function MessageRow({
     <span
       className={`absolute left-1 top-1/2 z-20 flex h-5 min-w-[1.25rem] -translate-y-1/2 items-center justify-center rounded-sm px-0.5 text-[10px] font-bold transition-colors ${
         active
-          ? "bg-amber-400 text-slate-900"
-          : "bg-slate-800 text-emerald-400 group-hover:bg-slate-700"
+          ? "bg-term-amber text-term-bg"
+          : "bg-term-panel text-term-green group-hover:bg-term-border"
       }`}
     >
       {String(index + 1).padStart(2, "0")}
@@ -143,7 +143,7 @@ function MessageRow({
           onClick={() => onSelect(index)}
           aria-current={active}
           className={`group relative block h-14 w-full text-left transition-colors ${
-            active ? "bg-amber-400/5" : "hover:bg-slate-700/20"
+            active ? "bg-term-amber/5" : "hover:bg-term-border/20"
           }`}
         >
           {badge}
@@ -157,7 +157,7 @@ function MessageRow({
           </motion.span>
           <span
             className={`absolute top-1/2 z-10 -translate-y-1/2 pl-2 text-[11px] ${
-              active ? "font-semibold text-amber-200" : "text-slate-300"
+              active ? "font-semibold text-term-amber" : "text-term-fg"
             }`}
             style={{ left: `calc(${left}% + 88px)` }}
           >
@@ -175,7 +175,7 @@ function MessageRow({
         onClick={() => onSelect(index)}
         aria-current={active}
         className={`group relative block h-14 w-full text-left transition-colors ${
-          active ? "bg-amber-400/5" : "hover:bg-slate-700/20"
+          active ? "bg-term-amber/5" : "hover:bg-term-border/20"
         }`}
       >
         {badge}
@@ -183,7 +183,7 @@ function MessageRow({
         {/* label above the line */}
         <span
           className={`absolute top-1.5 z-10 -translate-x-1/2 px-1 text-center text-[11px] leading-tight ${
-            active ? "font-semibold text-amber-200" : "text-slate-300"
+            active ? "font-semibold text-term-amber" : "text-term-fg"
           }`}
           style={{ left: `${left + width / 2}%`, maxWidth: `${Math.max(width, 20)}%` }}
         >
@@ -228,7 +228,7 @@ function MessageRow({
               marginTop: -10,
               marginLeft: -10,
               backgroundColor: ACTIVE,
-              color: "#1e293b",
+              color: "#05070a", // term.bg
             }}
             initial={{ left: `${fromCenter}%`, opacity: 0, scale: 0.5 }}
             animate={{ left: `${toCenter}%`, opacity: 1, scale: 1 }}

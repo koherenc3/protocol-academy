@@ -144,7 +144,7 @@ export function TopologyDiagram({ actors, steps, activeIndex, onSelect }: Props)
   }, [steps, actors, activeStep, activeIndex]);
 
   return (
-    <div className="h-[440px] w-full overflow-hidden rounded-sm border border-slate-700/60 bg-slate-950">
+    <div className="h-[440px] w-full overflow-hidden rounded-sm border border-term-border bg-term-bg">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -170,8 +170,8 @@ export function TopologyDiagram({ actors, steps, activeIndex, onSelect }: Props)
           if (idx >= 0) onSelect(idx);
         }}
       >
-        <Background color="#1e293b" gap={20} />
-        <Controls showInteractive={false} className="[&_button]:!bg-slate-900 [&_button]:!border-slate-700 [&_button]:!fill-emerald-400" />
+        <Background color="#1c2b2f" gap={20} />
+        <Controls showInteractive={false} className="[&_button]:!bg-term-panel [&_button]:!border-term-border [&_button]:!fill-term-green" />
       </ReactFlow>
     </div>
   );

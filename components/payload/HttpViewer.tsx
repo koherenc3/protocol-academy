@@ -14,13 +14,13 @@ export function HttpViewer({ payload }: { payload: HttpPayload }) {
   return (
     <div className="space-y-3 font-mono text-xs">
       <TerminalFrame title="request">
-        <span className="text-slate-600">$ </span>
+        <span className="text-term-dim">$ </span>
         <span
-          className={`font-semibold ${isRedirect ? "text-amber-300" : "text-emerald-400"}`}
+          className={`font-semibold ${isRedirect ? "text-term-amber" : "text-term-green"}`}
         >
           {isRedirect ? `${payload.method} Redirect →` : payload.method}
         </span>{" "}
-        <span className="break-all text-slate-200">{payload.url}</span>
+        <span className="break-all text-term-fg">{payload.url}</span>
       </TerminalFrame>
 
       {payload.query && Object.keys(payload.query).length > 0 && (
@@ -31,11 +31,11 @@ export function HttpViewer({ payload }: { payload: HttpPayload }) {
       )}
       {payload.body && (
         <div>
-          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-term-dim">
             {"// body"}
           </div>
           <TerminalFrame>
-            <pre className="whitespace-pre-wrap break-all text-slate-200">
+            <pre className="whitespace-pre-wrap break-all text-term-fg">
               {payload.body}
             </pre>
           </TerminalFrame>
@@ -58,25 +58,25 @@ function KeyValueTable({
 }) {
   return (
     <div>
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-term-dim">
         {title}
       </div>
-      <div className="overflow-hidden rounded-md border border-slate-700/60">
+      <div className="overflow-hidden rounded-md border border-term-border">
         <table className="w-full border-collapse font-mono">
           <tbody>
             {Object.entries(data).map(([k, v], i) => (
               <tr
                 key={k}
-                className={i % 2 ? "bg-slate-900/40" : "bg-slate-950/40"}
+                className={i % 2 ? "bg-term-panel/40" : "bg-term-bg/40"}
               >
                 <td
-                  className={`w-40 border-r border-slate-800 px-2 py-1 align-top ${
-                    highlightKeys ? "text-amber-300" : "text-slate-400"
+                  className={`w-40 border-r border-term-border px-2 py-1 align-top ${
+                    highlightKeys ? "text-term-amber" : "text-term-dim"
                   }`}
                 >
                   {k}
                 </td>
-                <td className="px-2 py-1 align-top break-all text-slate-200">
+                <td className="px-2 py-1 align-top break-all text-term-fg">
                   {v}
                 </td>
               </tr>

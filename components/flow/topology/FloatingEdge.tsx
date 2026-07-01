@@ -50,7 +50,7 @@ export function FloatingEdge({
       {label && (
         <EdgeLabelRenderer>
           <div
-            className="pointer-events-none absolute rounded-sm border border-slate-700 bg-slate-900 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-amber-300 shadow"
+            className="pointer-events-none absolute rounded-sm border border-term-border bg-term-panel px-1.5 py-0.5 font-mono text-[11px] font-semibold text-term-amber shadow"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             }}

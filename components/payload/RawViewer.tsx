@@ -7,7 +7,7 @@ export function RawViewer({ payload }: { payload: RawPayload }) {
   return (
     <div>
       <TerminalFrame title={payload.label ?? payload.language ?? "output"}>
-        <pre className="overflow-x-auto font-mono text-xs text-slate-200 whitespace-pre-wrap break-all">
+        <pre className="overflow-x-auto font-mono text-xs text-term-fg whitespace-pre-wrap break-all">
           {payload.content}
         </pre>
       </TerminalFrame>

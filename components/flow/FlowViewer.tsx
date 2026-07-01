@@ -16,7 +16,7 @@ const TopologyDiagram = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="grid h-[440px] place-items-center font-mono text-sm text-slate-500">
+      <div className="grid h-[440px] place-items-center font-mono text-sm text-term-dim">
         <span className="animate-pulse">$ loading topology…</span>
       </div>
     ),
@@ -114,7 +114,7 @@ export function FlowViewer({ flow }: { flow: Flow }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* View toggle: Sequence ("when") ⇄ Topology ("where") */}
           {hasTopology ? (
-            <div className="inline-flex rounded-md border border-slate-700 p-0.5 font-mono text-sm">
+            <div className="inline-flex rounded-md border border-term-border p-0.5 font-mono text-sm">
               {(["sequence", "topology"] as ViewMode[]).map((mode) => (
                 <button
                   key={mode}
@@ -123,8 +123,8 @@ export function FlowViewer({ flow }: { flow: Flow }) {
                   aria-pressed={view === mode}
                   className={`rounded px-3 py-1 font-medium transition-colors ${
                     view === mode
-                      ? "bg-emerald-400 text-slate-900"
-                      : "text-slate-300 hover:bg-slate-700/40"
+                      ? "bg-term-green text-term-bg"
+                      : "text-term-fg hover:bg-term-border/40"
                   }`}
                 >
                   {mode === "sequence" ? "--sequence" : "--topology"}
@@ -140,14 +140,14 @@ export function FlowViewer({ flow }: { flow: Flow }) {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-slate-700/60 bg-slate-900/20">
-        <div className="flex items-center gap-2 border-b border-slate-800 bg-slate-900/80 px-3 py-1.5">
+      <div className="overflow-hidden rounded-lg border border-term-border bg-term-panel/40">
+        <div className="flex items-center gap-2 border-b border-term-border bg-term-panel/80 px-3 py-1.5">
           <span className="flex gap-1.5" aria-hidden>
-            <span className="h-2.5 w-2.5 rounded-full bg-rose-500/60" />
-            <span className="h-2.5 w-2.5 rounded-full bg-amber-400/60" />
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/60" />
+            <span className="h-2.5 w-2.5 rounded-full bg-term-red/60" />
+            <span className="h-2.5 w-2.5 rounded-full bg-term-amber/60" />
+            <span className="h-2.5 w-2.5 rounded-full bg-term-green/60" />
           </span>
-          <span className="truncate font-mono text-[11px] text-slate-500">
+          <span className="truncate font-mono text-[11px] text-term-dim">
             {flow.protocolId}/{flow.id} — {showTopology ? "topology" : "sequence"}.diagram
           </span>
         </div>
@@ -175,7 +175,7 @@ export function FlowViewer({ flow }: { flow: Flow }) {
           type="button"
           onClick={() => go(-1)}
           disabled={activeIndex === 0}
-          className="rounded-md border border-slate-700 px-3 py-1.5 font-medium text-slate-200 enabled:hover:border-emerald-500/60 enabled:hover:bg-slate-700/40 disabled:opacity-40"
+          className="rounded-md border border-term-border px-3 py-1.5 font-medium text-term-fg enabled:hover:border-term-green/60 enabled:hover:bg-term-border/40 disabled:opacity-40"
         >
           [ ← prev ]
         </button>
@@ -183,11 +183,11 @@ export function FlowViewer({ flow }: { flow: Flow }) {
           <button
             type="button"
             onClick={togglePlay}
-            className="rounded-md border border-emerald-400/50 px-3 py-1.5 font-medium text-emerald-300 hover:bg-emerald-400/10"
+            className="rounded-md border border-term-green/50 px-3 py-1.5 font-medium text-term-green hover:bg-term-green/10"
           >
             {isPlaying ? "[ ⏸ pause ]" : "[ ▶ run ]"}
           </button>
-          <span className="hidden text-xs text-slate-500 sm:inline">
+          <span className="hidden text-xs text-term-dim sm:inline">
             ← / → or click a message
           </span>
         </div>
@@ -195,7 +195,7 @@ export function FlowViewer({ flow }: { flow: Flow }) {
           type="button"
           onClick={() => go(1)}
           disabled={activeIndex >= visibleSteps.length - 1}
-          className="rounded-md border border-slate-700 px-3 py-1.5 font-medium text-slate-200 enabled:hover:border-emerald-500/60 enabled:hover:bg-slate-700/40 disabled:opacity-40"
+          className="rounded-md border border-term-border px-3 py-1.5 font-medium text-term-fg enabled:hover:border-term-green/60 enabled:hover:bg-term-border/40 disabled:opacity-40"
         >
           [ next → ]
         </button>

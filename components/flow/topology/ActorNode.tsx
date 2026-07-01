@@ -20,7 +20,7 @@ export function ActorNode({ data }: NodeProps & { data: ActorNodeData }) {
   const color = ROLE_COLORS[data.role];
   return (
     <div
-      className="flex items-center gap-2 rounded-sm border-2 bg-slate-900 px-3 py-2 font-mono text-xs font-semibold transition-shadow"
+      className="flex items-center gap-2 rounded-sm border-2 bg-term-panel px-3 py-2 font-mono text-xs font-semibold transition-shadow"
       style={{
         borderColor: color,
         color,
@@ -29,7 +29,7 @@ export function ActorNode({ data }: NodeProps & { data: ActorNodeData }) {
       title={data.description}
     >
       <RoleIcon role={data.role} />
-      <span className="whitespace-nowrap text-slate-100">{data.label}</span>
+      <span className="whitespace-nowrap text-term-fg">{data.label}</span>
 
       {/* Hidden handles: floating edges compute their own attach points. */}
       <Handle
