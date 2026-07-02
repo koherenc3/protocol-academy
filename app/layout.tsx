@@ -65,14 +65,22 @@ export default function RootLayout({
                 </span>
                 <span className="ml-0.5 inline-block h-3.5 w-2 bg-term-green animate-caret" />
               </Link>
-              <a
-                href={SITE.newFlowUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="term-bracket shrink-0 border border-term-border px-2 py-1 text-xs text-term-dim hover:border-term-green hover:text-term-green"
-              >
-                [+] contribute a flow
-              </a>
+              <div className="flex shrink-0 items-center gap-2">
+                <Link
+                  href="/about"
+                  className="term-bracket border border-term-border px-2 py-1 text-xs text-term-dim hover:border-term-cyan hover:text-term-cyan"
+                >
+                  [?] why this exists
+                </Link>
+                <a
+                  href={SITE.newFlowUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="term-bracket border border-term-border px-2 py-1 text-xs text-term-dim hover:border-term-green hover:text-term-green"
+                >
+                  [+] contribute a flow
+                </a>
+              </div>
             </div>
           </header>
 
