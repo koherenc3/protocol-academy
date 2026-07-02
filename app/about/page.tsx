@@ -53,8 +53,7 @@ export default function AboutPage() {
             reviewer agent fact-checks that PR against the primary spec
             before I see it. CI, the reviewer, and a Vercel preview all run
             in parallel. I read the review, click through the preview, and
-            merge or don&apos;t. That&apos;s the whole loop, and it&apos;s
-            the same loop this page went through.
+            merge or don&apos;t. That&apos;s the whole loop.
           </p>
         </section>
 
